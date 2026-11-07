@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>継ぎ手（TSUGITE）デモ</title>
+<style>
+  :root {
+    --navy: #1f4e79;
+    --green: #2e8b57;
+    --orange: #c9822b;
+    --navy-soft: #e9eff5;
+    --green-soft: #eaf5ee;
+    --orange-soft: #fbf1e3;
+    --ink: #22303d;
+    --sub: #6b6458;
+    --line: #e5ddcd;
+    --paper: #faf7f0;
+    --card: #fffdf9;
+    --wood: #e8cf9f;
+    --wood-dark: #c79a5a;
+    --mincho: "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "HGS明朝E", serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    font-size: 19px;
+    line-height: 1.75;
+    color: var(--ink);
+    background: var(--paper);
+    /* 和紙のような、ごく薄い繊維のむら */
+    background-image:
+      radial-gradient(rgba(160,130,80,.05) 1px, transparent 1px),
+      radial-gradient(rgba(160,130,80,.035) 1px, transparent 1px);
+    background-size: 23px 23px, 37px 37px;
+    background-position: 0 0, 11px 17px;
+    /* 語の途中で改行しない：<wbr> の位置だけで折り返す。入りきらないときだけ折る */
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    line-break: strict;
+  }
+  @supports (word-break: auto-phrase) { body { word-break: auto-phrase; } }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  h1, h2, h3, h4, .mincho { font-family: var(--mincho); font-weight: 700; }
+
+  /* ---------- ヘッダー ---------- */
+  header { background: var(--navy); color: #fff; padding: 16px 28px 0; }
+  .brand { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .brand .mark { width: 66px; height: 44px; flex: none; }
+  .brand h1 { margin: 0; font-size: 32px; letter-spacing: .14em; line-height: 1.2; }
+  .brand .en { font-size: 13px; opacity: .75; letter-spacing: .3em; }
+  .brand .tag { font-size: 15px; opacity: .85; margin-left: auto; white-space: nowrap; }
+  @media (max-width: 860px) { .brand .tag { margin-left: 0; width: 100%; white-space: normal; } }
+  nav.tabs { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  nav.tabs button {
+    border: 0; background: rgba(255,255,255,.12); color: #fff; white-space: nowrap;
+    padding: 10px 26px 12px; border-radius: 12px 12px 0 0; font-size: 19px;
+    font-family: var(--mincho); font-weight: 700; letter-spacing: .06em;
+  }
+  nav.tabs button:hover { background: rgba(255,255,255,.2); }
+  nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--navy); }
+
+  main { max-width: 1320px; margin: 0 auto; padding: 22px 24px 64px; }
+  @media (max-width: 620px) { main { padding: 16px 12px 48px; } header { padding: 12px 14px 0; } }
+  .banner {
+    display: none; margin-bottom: 16px; padding: 8px 14px; border-radius: 10px;
+    background: var(--orange-soft); border-left: 5px solid var(--orange); color: #7a4a10; font-size: 15px;
+  }
+  .banner.show { display: block; }
+  .banner b { font-weight: 800; }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; box-shadow: 0 1px 2px rgba(80,60,30,.04); }
+  .panel + .panel { margin-top: 18px; }
+  .panel.quiet { background: transparent; box-shadow: none; padding: 12px 16px; }
+  h2 { margin: 0 0 10px; font-size: 22px; color: var(--navy); letter-spacing: .04em; }
+  .muted { color: var(--sub); font-size: 15px; }
+
+  /* ---------- お客さま選び（控えめ） ---------- */
+  .setup { margin-bottom: 22px; padding: 14px 18px; }
+  .setup-head { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; margin-bottom: 10px; }
+  .setup-head h2 { margin: 0; font-size: 18px; }
+  .name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 15px; color: var(--sub); }
+  .name-row input { width: 8em; padding: 4px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font-size: 16px; color: var(--ink); }
+  .name-row .muted { font-size: 13px; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, .75fr); gap: 10px; }
+  .cards.has-x { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, .75fr); }
+  @media (max-width: 1100px) { .cards, .cards.has-x { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 620px) {
+    .cards { grid-template-columns: 1fr; gap: 8px; }
+    .cards.picked .card:not([aria-pressed="true"]) .memo { display: none; }
+    nav.tabs { gap: 4px; flex-wrap: nowrap; }
+    nav.tabs button { padding: 8px 12px 10px; font-size: 16px; letter-spacing: 0; flex: 1 1 0; }
+    .brand h1 { font-size: 28px; }
+  }
+  .card {
+    text-align: left; background: #fff; border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 8px 12px 9px; transition: border-color .15s, box-shadow .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--navy); transform: translateY(-1px); }
+  .card[aria-pressed="true"] { border-color: var(--navy); box-shadow: 0 0 0 3px var(--navy-soft); background: #fbfdff; }
+  .card .who { font-family: var(--mincho); font-weight: 700; font-size: 19px; color: var(--navy); }
+  .card .co { font-size: 12px; color: var(--sub); margin-left: 6px; white-space: nowrap; }
+  .card .memo-label { display: none; }
+  .card .memo { font-size: 13px; margin: 2px 0 0; padding: 0; list-style: none; color: var(--sub); line-height: 1.6; }
+  .card .memo li { display: inline; }
+  .card .memo li + li::before { content: "・"; }
+  .card .progress { font-size: 12px; color: var(--green); font-weight: 700; margin-top: 2px; min-height: 0; }
+  .card .progress:empty { display: none; }
+  .card.add { border: 1.5px dashed #b9ad97; background: transparent; color: var(--navy); text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .card.add:hover { background: #fff; border-color: var(--navy); }
+  .card.add .plus { font-family: var(--mincho); font-weight: 700; font-size: 17px; white-space: nowrap; }
+  .card.add .sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .custom-form { margin-top: 14px; padding: 14px 16px; border: 1.5px solid var(--navy); border-radius: 14px; background: #fff; }
+  .caution { font-size: 15px; font-weight: 800; color: #7a4a10; background: var(--orange-soft); border-left: 5px solid var(--orange); padding: 6px 12px; border-radius: 0 8px 8px 0; margin-bottom: 12px; }
+  .cf-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 12px; margin-bottom: 8px; }
+  .cf-grid label { display: flex; flex-direction: column; font-size: 14px; color: var(--sub); gap: 2px; }
+  .cf-grid label.wide { grid-column: 1 / -1; }
+  .cf-grid input, .cf-grid textarea { border: 1.5px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 17px; background: #fff; color: var(--ink); }
+  .cf-grid textarea { min-height: 64px; resize: vertical; }
+  .cf-grid input:focus, .cf-grid textarea:focus { outline: none; border-color: var(--navy); }
+  .custom-form .muted { font-size: 13px; margin-bottom: 10px; }
+  @media (max-width: 860px) { .cf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* ---------- いまの問い（主役） ---------- */
+  .qpanel { border-top: 5px solid var(--navy); padding: 22px 26px 24px; }
+  .qhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .qno { font-family: var(--mincho); font-size: 16px; color: var(--sub); margin-right: 2px; white-space: nowrap; }
+  .fuda {
+    display: inline-block; font-size: 15px; font-weight: 800; padding: 2px 14px; border-radius: 999px;
+    border: 2px solid currentColor; line-height: 1.6; white-space: nowrap; letter-spacing: .04em;
+  }
+  .fuda.t-確かめる { color: var(--navy); background: var(--navy-soft); }
+  .fuda.t-選ぶ { color: var(--green); background: var(--green-soft); }
+  .fuda.t-噛み砕く { color: var(--orange); background: var(--orange-soft); }
+  .fuda.t-プラスα { color: var(--green); background: #fff; border-color: var(--green); }
+  .fuda.t-最後のひと押し { color: #fff; background: var(--navy); border-color: var(--navy); }
+  .fuda.t-承認 { color: #fff; background: var(--green); border-color: var(--green); }
+  .fuda.t-おわり { color: var(--sub); background: #f1ece2; }
+  .layers { display: flex; gap: 4px; margin-left: auto; align-items: center; font-size: 13px; color: var(--sub); flex-wrap: wrap; }
+  .layers > span:first-child { white-space: nowrap; }
+  .layer { padding: 1px 9px; border-radius: 6px; border: 1px solid var(--line); background: #fff; white-space: nowrap; font-family: var(--mincho); font-weight: 700; }
+  .layer.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .layer small { font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif; font-weight: 400; font-size: 11px; opacity: .85; margin-left: 2px; }
+
+  .ack {
+    margin: 6px 0 12px; padding: 12px 16px; border-left: 5px solid var(--green);
+    background: var(--green-soft); border-radius: 0 12px 12px 0; font-size: 18px; color: #1f4f35;
+  }
+  .question { font-size: 30px; font-weight: 800; line-height: 1.55; margin: 8px 0 6px; color: var(--ink); letter-spacing: .01em; }
+  @media (max-width: 620px) { .question { font-size: 24px; } }
+  .reason { font-size: 14px; color: var(--sub); margin: 0 0 18px; padding-left: 10px; border-left: 3px solid var(--wood); }
+  .options { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .opt {
+    border: 2px solid var(--navy); background: #fff; color: var(--navy); border-radius: 999px;
+    padding: 9px 20px; font-size: 19px; font-weight: 700; transition: background .15s, transform .15s;
+  }
+  .opt:hover { background: var(--navy-soft); transform: translateY(-1px); }
+  .opt.other { border-style: dashed; color: var(--sub); border-color: #a99f8e; font-weight: 400; }
+  .answer-box textarea {
+    width: 100%; min-height: 140px; padding: 12px 16px; border: 2px solid var(--line); border-radius: 14px;
+    resize: vertical; font-size: 20px; line-height: 1.6; background: #fff;
+  }
+  .answer-box textarea:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 4px var(--navy-soft); }
+  .voice { font-size: 13px; color: var(--sub); margin: 6px 0 12px; }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .send {
+    background: var(--navy); color: #fff; border: 0; border-radius: 12px; padding: 12px 32px;
+    font-size: 19px; font-weight: 800; letter-spacing: .08em; white-space: nowrap;
+    box-shadow: 0 2px 0 #163a5a;
+  }
+  .send:disabled { background: #9aa9b8; box-shadow: none; cursor: default; }
+  .ghost { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font-size: 15px; white-space: nowrap; }
+  .ghost:hover { border-color: var(--navy); }
+  .status { font-size: 16px; color: var(--navy); font-weight: 700; white-space: nowrap; }
+  .status .dots::after { content: "…"; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  .error {
+    display: none; margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+    background: var(--orange-soft); border: 1px solid var(--orange); font-size: 16px;
+  }
+  .error.show { display: block; }
+  .error .actions { margin-top: 8px; }
+  .done-note { padding: 12px 16px; border-radius: 12px; background: var(--green-soft); color: #1d5c3a; font-weight: 700; }
+  .empty-q { color: var(--sub); font-size: 19px; padding: 28px 0; text-align: center; }
+
+  /* ---------- やりとり（控えめ） ---------- */
+  details.log summary { cursor: pointer; color: var(--sub); font-size: 15px; }
+  .log ol { padding-left: 0; list-style: none; margin: 10px 0 0; }
+  .log li { padding: 8px 0; border-top: 1px dashed var(--line); font-size: 15px; }
+  .log .q { color: var(--navy); }
+  .log .a { color: var(--ink); margin-top: 2px; }
+  .log .fuda { font-size: 11px; padding: 0 8px; }
+  .log .muted { font-size: 13px; }
+
+  /* ---------- 仕分けボード（主役） ---------- */
+  .board { border-top: 5px solid var(--green); padding: 20px 22px 22px; }
+  @media (min-width: 901px) { .board { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; } }
+  .board h2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 24px; }
+  .board .upd { font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif; font-size: 13px; color: var(--sub); font-weight: 400; white-space: nowrap; }
+  .legend { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 13px; color: var(--sub); margin-bottom: 6px; }
+  .legend > span { white-space: nowrap; }
+  .mk { display: inline-block; font-size: 11px; font-weight: 800; padding: 0 7px; border-radius: 5px; margin-right: 5px; white-space: nowrap; vertical-align: 2px; line-height: 1.7; }
+  .mk.self { background: var(--green); color: #fff; }
+  .mk.guess { background: #fff; color: var(--navy); border: 1px dashed var(--navy); }
+  .mk.new { background: var(--orange); color: #fff; }
+  .sec { margin-top: 16px; }
+  .sec h3 { margin: 0 0 8px; font-size: 18px; display: flex; align-items: center; gap: 8px; letter-spacing: .04em; }
+  .sec.answered h3 { color: var(--green); }
+  .sec.guesses h3 { color: var(--navy); }
+  .sec.notyet h3 { color: var(--orange); }
+  .sec ul { list-style: none; margin: 0; padding: 0; }
+  .sec li { padding: 10px 14px; border-radius: 12px; margin-bottom: 8px; font-size: 18px; line-height: 1.6; --glow: 46,139,87; }
+  .sec.answered li { background: var(--green-soft); border-left: 5px solid var(--green); }
+  .sec.answered .quote { display: block; font-size: 15px; color: #2c5d41; margin-top: 3px; }
+  .sec.guesses li { background: #fff; border: 2px dashed #9fb3c8; color: #33475b; --glow: 31,78,121; }
+  .sec.notyet li { background: var(--orange-soft); border-left: 5px solid var(--orange); --glow: 201,130,43; }
+  .sec li.none { background: transparent; border: 0; color: var(--sub); font-size: 15px; padding: 2px 0; }
+  .count { font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif; font-size: 13px; font-weight: 700; padding: 0 9px; border-radius: 999px; background: #fff; border: 1px solid currentColor; white-space: nowrap; }
+  /* 新しい項目が入ったら、ふわっと光る */
+  .sec li.new { animation: fuwa 2.8s ease-out both; position: relative; }
+  @keyframes fuwa {
+    0%   { opacity: 0; transform: translateY(-8px) scale(.97); box-shadow: 0 0 0 0 rgba(var(--glow), 0); }
+    14%  { opacity: 1; transform: none; box-shadow: 0 0 0 5px rgba(var(--glow), .38), 0 0 38px 12px rgba(var(--glow), .55); filter: brightness(1.08); }
+    45%  { box-shadow: 0 0 0 3px rgba(var(--glow), .18), 0 0 22px 4px rgba(var(--glow), .25); filter: none; }
+    100% { box-shadow: 0 0 0 0 rgba(var(--glow), 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .sec li.new { animation: none; box-shadow: 0 0 0 3px rgba(var(--glow), .35); } }
+
+  /* ---------- ② 貯める ---------- */
+  .tameru-head { margin-bottom: 18px; }
+  .hcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px; }
+  @media (max-width: 620px) { .hcards { grid-template-columns: 1fr; } }
+  .hcard { background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--navy); border-radius: 16px; padding: 18px 20px; }
+  .hcard h3 { margin: 0; font-size: 24px; color: var(--navy); display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .hcard .co { font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif; font-size: 13px; white-space: nowrap; }
+  .hcard .st { font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif; font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
+  .hcard .rec { font-size: 13px; color: var(--sub); margin: 4px 0 10px; }
+  .hcard h4 { margin: 14px 0 4px; font-size: 16px; }
+  .hcard h4.g { color: var(--green); } .hcard h4.n { color: var(--orange); } .hcard h4.p { color: var(--navy); }
+  .lyr { margin: 8px 0; }
+  .lyr .lname { display: inline-block; font-size: 12px; font-weight: 800; color: #fff; background: var(--navy); border-radius: 5px; padding: 0 8px; margin-bottom: 2px; white-space: nowrap; }
+  .hcard ul { list-style: none; margin: 0; padding: 0; }
+  .hcard li { font-size: 16px; padding: 4px 0 4px 12px; border-left: 3px solid var(--green); margin: 4px 0; }
+  .hcard li .quote { display: block; font-size: 14px; color: #2c5d41; }
+  .hcard li.gs { border-left: 3px dashed #9fb3c8; color: #33475b; }
+  .hcard li.ny { border-left: 3px solid var(--orange); }
+  .hcard .go { margin-top: 14px; }
+
+  /* ---------- ③ 渡す ---------- */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .chip { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 16px; font-size: 16px; white-space: nowrap; }
+  .chip[aria-pressed="true"] { border-color: var(--navy); background: var(--navy-soft); color: var(--navy); font-weight: 800; }
+  .chip small { font-size: 12px; color: var(--sub); font-weight: 400; margin-left: 4px; }
+  .field-label { display: block; font-size: 15px; color: var(--sub); margin-top: 4px; }
+  .nippo { width: 100%; min-height: 160px; padding: 12px 16px; border: 2px solid var(--line); border-radius: 14px; resize: vertical; font-size: 19px; line-height: 1.6; background: #fff; }
+  .nippo:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 4px var(--navy-soft); }
+  .wreply { border-top: 5px solid var(--green); }
+  .rblock { margin-bottom: 16px; }
+  .rblock p { margin: 6px 0 0; font-size: 19px; }
+  .rblock .story { background: var(--navy-soft); border-radius: 12px; padding: 12px 16px; }
+  .rblock.closing p { font-size: 22px; font-weight: 800; color: var(--ink); border-left: 5px solid var(--green); padding-left: 14px; }
+  .fuda.t-受け止める { color: var(--green); background: var(--green-soft); }
+  .fuda.t-物語 { color: var(--navy); background: var(--navy-soft); }
+  .fuda.t-問い { color: #fff; background: var(--navy); border-color: var(--navy); }
+  .fuda.t-承認・励まし { color: #fff; background: var(--green); border-color: var(--green); }
+  .fuda.t-意識する一点 { color: #fff; background: var(--orange); border-color: var(--orange); }
+  .used { font-size: 13px; color: var(--sub); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 54 36" role="img" aria-label="木組みの継ぎ手（蟻継ぎ）">
+      <path d="M3 7 H23 V13 L33 9.5 V26.5 L23 23 V29 H3 Z" fill="var(--wood)"/>
+      <path d="M23 7 H51 V29 H23 V23 L33 26.5 V9.5 L23 13 Z" fill="var(--wood-dark)"/>
+      <path d="M23 7 V13 L33 9.5 V26.5 L23 23 V29" fill="none" stroke="#163a5a" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M6 12 H19 M6 18 H20 M6 24 H18 M37 12 H48 M38 18 H48 M37 24 H48" stroke="rgba(120,80,30,.28)" stroke-width="1"/>
+    </svg>
+    <h1>継ぎ手</h1><span class="en">TSUGITE</span>
+    <span class="tag">ベテランに聞き出す → 貯める → 若手に渡す</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す</button>
+    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める</button>
+    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す</button>
+  </nav>
+</header>
+
+<main>
+  <div id="banner" class="banner"><b>見本（AIの応答を固定で表示しています）</b>　このページからClaudeを呼べないため、A社長の3往復と、日報への返信1件を決まった流れで見せています。</div>
+
+  <!-- タブ① 聞き出す -->
+  <section id="tab-kikidasu" role="tabpanel">
+    <div class="panel setup">
+      <div class="setup-head">
+        <h2>お客さまを1人選ぶ</h2>
+        <div class="name-row">
+          <label for="vname">ベテランのお名前</label>
+          <input id="vname" type="text" placeholder="例：佐藤" autocomplete="off"><span>さん</span>
+          <span class="muted">（承認の一文で使います。空でもかまいません）</span>
+        </div>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div id="customForm" class="custom-form hidden">
+        <div class="caution">実名・会社名・連絡先は入れないでください。会話は保存されません。</div>
+        <div class="cf-grid">
+          <label>呼び名<input id="cfName" type="text" placeholder="例：D社長" autocomplete="off"></label>
+          <label>取引年数<input id="cfYears" type="text" placeholder="例：12年" autocomplete="off"></label>
+          <label>主な納品物<input id="cfProducts" type="text" placeholder="例：金型部品" autocomplete="off"></label>
+          <label>訪問の頻度<input id="cfVisits" type="text" placeholder="例：月1回" autocomplete="off"></label>
+          <label class="wide">記録に残っているメモ（SFA・顧客台帳に書いてあること）<textarea id="cfMemo" placeholder="例：見積もりは毎回2社で比べる。窓口は購買課。"></textarea></label>
+        </div>
+        <div class="muted">記録に残る情報だけを入れてください。会える曜日や好みなど、ベテランしか知らないことは、このあとAIが聞き出します。空欄があっても始められます（そのときは、記録の中身を確かめる問いから入ります）。</div>
+        <div class="actions">
+          <button id="cfStart" class="send" type="button">この記録で聞き始める</button>
+          <button id="cfClose" class="ghost" type="button">閉じる</button>
+          <span id="cfStatus" class="status hidden">最初の問いを考え中<span class="dots"></span></span>
+        </div>
+        <div id="cfError" class="error"></div>
+      </div>
+    </div>
+    <div class="layout">
+      <div>
+        <div class="panel qpanel" id="qpanel">
+          <div id="qempty" class="empty-q">上のカードを選ぶと、AIが記録から仮説を立てて、最初の問いを出します。</div>
+          <div id="qarea" class="hidden">
+            <div class="qhead">
+              <span class="qno" id="qno"></span>
+              <span id="fuda"></span>
+              <div class="layers" id="layers" aria-label="問いの4層">
+                <span>この問いは</span>
+                <span class="layer" data-layer="根">根<small>なぜ</small></span>
+                <span class="layer" data-layer="幹">幹<small>案件の記憶</small></span>
+                <span class="layer" data-layer="葉">葉<small>具体</small></span>
+                <span class="layer" data-layer="役割">役割<small>誰が行けば</small></span>
+              </div>
+            </div>
+            <div id="ack" class="ack hidden"></div>
+            <div id="question" class="question"></div>
+            <div id="reason" class="reason hidden"></div>
+            <div id="options" class="options"></div>
+            <div id="answerBox" class="answer-box">
+              <textarea id="answer" placeholder="ここに話して入れてください（選択肢を押すと、ここに入ります）"></textarea>
+              <div class="voice">話して入れる：Mac＝音声入力キー（🎤）／Windows＝Windowsキー＋H／iPhone＝キーボードのマイク</div>
+              <div class="actions">
+                <button id="send" class="send">答える</button>
+                <span id="status" class="status hidden">聞き取り中<span class="dots"></span></span>
+                <button id="stop" class="ghost hidden">やめる</button>
+              </div>
+            </div>
+            <div id="doneNote" class="done-note hidden">聞き取りが終わりました。②「貯める」に、引き継ぎカードとして並んでいます。</div>
+            <div id="error" class="error">
+              <div id="errorMsg"></div>
+              <div class="actions">
+                <button id="retry" class="ghost">もう一度</button>
+                <button id="toSample" class="ghost">見本の流れに切り替える</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel quiet">
+          <details class="log" id="logWrap">
+            <summary>これまでのやりとり（<span id="logCount">0</span>）</summary>
+            <ol id="log"></ol>
+          </details>
+        </div>
+      </div>
+
+      <aside class="panel board" id="board" aria-live="polite">
+        <h2>仕分けボード <span class="upd" id="upd">まだ更新なし</span></h2>
+        <div class="legend">
+          <span><span class="mk self">本人の言葉</span>ベテランが言ったこと</span>
+          <span><span class="mk guess">AIの推測</span>まだ確かめていない</span>
+          <span><span class="mk new">今回</span>いま増えた</span>
+        </div>
+        <div class="sec answered"><h3>答えてもらえたこと <span class="count" id="cAnswered">0</span></h3><ul id="bAnswered"></ul></div>
+        <div class="sec guesses"><h3>AIの推測 <span class="count" id="cGuesses">0</span></h3><ul id="bGuesses"></ul></div>
+        <div class="sec notyet"><h3>まだのこと <span class="count" id="cNotyet">0</span></h3><ul id="bNotyet"></ul></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="tab-tameru" role="tabpanel" class="hidden">
+    <div class="panel tameru-head">
+      <h2>引き継ぎカード</h2>
+      <div class="muted">①で聞き出した内容が、お客さまごとに並びます。ベテラン本人の言葉を、問いの4層（根・幹・葉・役割）に分けています。保存はしません（ページを閉じると消えます）。</div>
+    </div>
+    <div id="hcards" class="hcards"></div>
+  </section>
+
+  <section id="tab-watasu" role="tabpanel" class="hidden">
+    <div class="layout">
+      <div>
+        <div class="panel">
+          <h2>若手の日報に返す</h2>
+          <div class="muted">答えを渡しきらず、引き継ぎカードにある「先輩の物語」で返します。締めは「問い」「承認・励まし」「意識する一点」のどれかです。</div>
+          <div class="chips" id="wchips"></div>
+          <label class="field-label" for="nippo">若手の日報</label>
+          <textarea id="nippo" class="nippo" placeholder="今日の訪問で起きたこと、困ったことを書いてください"></textarea>
+          <div class="voice">話して入れる：Mac＝音声入力キー（🎤）／Windows＝Windowsキー＋H／iPhone＝キーボードのマイク</div>
+          <div class="actions">
+            <button id="wsend" class="send">先輩として返す</button>
+            <button id="wsample" class="ghost" type="button">例の日報を入れる</button>
+            <span id="wstatus" class="status hidden">返事を考え中<span class="dots"></span></span>
+          </div>
+          <div id="werror" class="error"><div id="werrorMsg"></div></div>
+        </div>
+      </div>
+      <aside class="panel wreply" id="wreply">
+        <h2>継ぎ手からの返信</h2>
+        <div id="wempty" class="empty-q">日報を入れて「先輩として返す」を押すと、ここに返信が出ます。</div>
+        <div id="wbody" class="hidden">
+          <div class="rblock"><span class="fuda t-受け止める">受け止める</span><p id="rUke"></p></div>
+          <div class="rblock"><span class="fuda t-物語">先輩の物語</span><p id="rStory" class="story"></p></div>
+          <div class="rblock closing"><span id="rCtype" class="fuda"></span><p id="rClose"></p></div>
+          <div id="rUsed" class="used"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<!-- ここから下は画面に依存しない部分（指示文の組み立て・応答の整え方）。検証でもこのまま使う -->
+<script id="tsugite-core">
+"use strict";
+var TsugiteCore = (function () {
+
+  // kikidasu_prompt_v1.md「1. 指示文（毎回送る）」をそのまま
+  var INSTRUCTION = [
+    "あなたは「継ぎ手」です。地方の中小メーカー「みなと精工」（架空）で、退職を控えたベテラン営業から、お客さまとの関係の作り方を聞き出し、後任の若手に引き継ぐためのインタビュアーです。",
+    "",
+    "目的：記録に残らない「関係の作り方」（会える曜日や時間、話の入り方、関係が深まったきっかけ、気遣い、誰が行けば話が通るか）を、ベテラン本人の言葉で聞き出し、仕分けること。",
+    "",
+    "### 聞き方の作法（必ず守る）",
+    "1. 基本はYES/NOか、選択肢（3〜4個）で聞く。「何をしていますか？」のような広い質問はしない。違っていれば人はつい話してくれるので、選択肢は「ありそうな仮説」で作る。",
+    "2. 広く聞く質問は、インタビューの最後の1回だけ。「もう一つだけ付け加えるとしたら、他に何かありますか？」",
+    "3. 尋問にしない。承認は2〜3回に1回だけ（前回の承認から2回以上空いていて、かつ答えにベテラン自身の大切にしてきたこと・考え方が表れたとき）。承認は「〇〇を大切にされてきた△△さんだからこそ、お客さまからの信頼も厚かったのですね」の形で、その人の答えの言葉を使って短く。続けて2回は承認しない。",
+    "4. 答えが抽象的なとき（「誠意」「信頼」「相手を思う」「タイミング」など、具体的な行動がない言葉だけのとき）は、噛み砕く問いにする。「噛み砕くとしたら、3〜4つの段階で考えると？」「若手でもできそうな一歩目は？」",
+    "5. 最初の1問は、お客さまカードから仮説を立てて確かめる（白紙で聞かない）。",
+    "6. 主語は相手。敬語で、短く（問いは60字以内）。責めない。できていないことより、次の一つを聞く。",
+    "7. 本人が言っていないことを「答えてもらえたこと」に入れない。推測は必ず「AIの推測」として分ける。",
+    "8. 実在の会社名・人名は使わない。",
+    "",
+    "### 問いの4層（どこを聞いているかを毎回付ける）",
+    "- 根：なぜそうしているのか（大切にしていること）",
+    "- 幹：案件や出来事の記憶（いつ、何がきっかけで）",
+    "- 葉：具体的な行動・気遣い",
+    "- 役割：誰が行けば話が通るか",
+    "",
+    "### 返す形（JSONだけを返す）",
+    "{",
+    '  "type": "確かめる | 選ぶ | 噛み砕く | 最後のひと押し",',
+    '  "reason": "この問いの狙い。なぜこの聞き方を選んだかを、見る人向けに1行（40字以内）。例：抽象的な答えだったので、若手が真似できる一歩目に噛み砕きます",',
+    '  "acknowledgement": "承認の一文。承認しない回は空文字",',
+    '  "question": "次の問い（60字以内）",',
+    '  "options": ["選択肢1", "選択肢2", "選択肢3", "他にありますか？"],',
+    '  "layer": "根 | 幹 | 葉 | 役割",',
+    '  "board_add": {',
+    '    "answered": [{"text": "答えてもらえたこと（短く）", "source": "本人の言葉 | AIの推測", "quote": "本人の言葉のときは原文をそのまま"}],',
+    '    "notyet": ["まだ聞けていないこと（短く）"]',
+    "  },",
+    '  "board_remove_notyet": ["今回の答えで埋まった『まだのこと』"]',
+    "}",
+    "- type が「確かめる」のときは options を [\"はい\", \"いいえ\", \"少し違う\"] にする。",
+    "- 「最後のひと押し」のときだけ options を空にする。",
+    "- 承認した回は、画面に札「承認」も表示する（acknowledgement が空でなければ表示）。"
+  ].join("\n");
+
+  var DEFAULT_REASON = {
+    "確かめる": "仮説が合っているかを、はい・いいえで手早く確かめます",
+    "選ぶ": "ありそうな答えを並べて、選ぶだけで話しやすくします",
+    "噛み砕く": "抽象的な答えだったので、若手が真似できる一歩目に噛み砕きます",
+    "最後のひと押し": "最後に一度だけ広く聞いて、聞きもらしを拾います",
+    "プラスα": "言い直してくれたので、まずご本人に考えを足してもらいます"
+  };
+  var FINAL_QUESTION = "もう一つだけ付け加えるとしたら、他に何かありますか？";
+  var FINAL_AT = 8;               // 8問目以降は「最後のひと押し」
+  var TYPES = ["確かめる", "選ぶ", "噛み砕く", "最後のひと押し", "プラスα"];
+  var PLUS_OPTIONS = ["ある（話して付け足す）", "すぐには思いつかない"];
+  var LAYERS = ["根", "幹", "葉", "役割"];
+  var YESNO = ["はい", "いいえ", "少し違う"];
+  var ABSTRACT_WORDS = ["誠意", "信頼", "相手を思", "タイミング", "気持ち", "心が大事", "人間関係", "真心", "思いやり", "熱意", "縁", "結局は"];
+
+  // お客さまカード：SFAや顧客台帳に残っている「記録」だけ（すべて架空）。
+  // 会える曜日・関係のきっかけ・雑談の好みなどは記録に無い。ベテランが答えて初めて出てくる。
+  var CUSTOMERS = {
+    A: {
+      id: "A", name: "A社長", company: "A社（架空）",
+      records: ["取引18年", "主な納品物：精密シャフト・治具", "訪問：月2回（18年間ほぼ途切れず）", "先方窓口：A社長（社長が直接）", "当社担当：ベテラン営業（来春退職）"],
+      first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
+               reason: "記録の「月2回を18年」から、会い方に決まりがあると読んで確かめます",
+               question: "A社長とは、訪問の曜日や時間帯がだいたい決まっている印象です。合っていますか？" },
+      firstGuess: "訪問の曜日・時間帯がだいたい決まっている（月2回の訪問が18年続いているため）"
+    },
+    B: {
+      id: "B", name: "B社長", company: "B社（架空）",
+      records: ["取引9年", "主な納品物：樹脂成形部品", "訪問：月1回（1回の訪問記録が長め・平均90分）", "先方窓口：B社長", "当社担当：ベテラン営業（来春退職）"],
+      first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
+               reason: "記録の「訪問が平均90分」から、雑談の時間が長いと読んで確かめます",
+               question: "B社長とは訪問が長めなので、本題の前に雑談の時間をとっている印象です。合っていますか？" },
+      firstGuess: "本題の前に雑談の時間をとっている（訪問が平均90分と長いため）"
+    },
+    C: {
+      id: "C", name: "C部長", company: "C社（架空）",
+      records: ["取引4年", "主な納品物：検査用ゲージ", "訪問：四半期に1回（やりとりの8割はメール）", "先方窓口：C部長（購買部）", "当社担当：ベテラン営業（来春退職）"],
+      first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
+               reason: "記録の「やりとりの8割がメール」から、書面を好むと読んで確かめます",
+               question: "C部長とは、訪問より先にメールで要点を送るほうが話が進む印象です。合っていますか？" },
+      firstGuess: "訪問より先にメールで要点を送るほうが話が進む（やりとりの8割がメールのため）"
+    }
+  };
+  function recordText(c) { return c.name + "（" + c.company + "）：" + c.records.join("／"); }
+
+  var START_NOTYET = [
+    "会える曜日・時間帯",
+    "関係が深まったきっかけ",
+    "話の入り方",
+    "具体的な気遣い",
+    "大切にしていること（なぜそうするか）",
+    "若手が行くとき、誰と行けば話が通るか"
+  ];
+
+  function newSession(cid) {
+    var c = CUSTOMERS[cid];
+    return {
+      customer: cid,
+      turns: [],                    // {q:{...}, a:"..."}
+      current: c.first ? clone(c.first) : null,   // いま画面に出ている問い（自分のお客さまは、AIの最初の問いが来てから入る）
+      qNo: 1,                       // いまの問いが何問目か
+      plusUsed: false,              // 「プラスα」の問いを使ったか（1回のインタビューで1回だけ）
+      sinceAck: 0,                  // 前回の承認から、承認なしの問いがいくつ続いたか（1問目の仮説は数えない）
+      board: { answered: [], guesses: c.firstGuess ? [{ text: c.firstGuess, isNew: false }] : [], notyet: START_NOTYET.slice() },
+      updates: 0,
+      done: false
+    };
+  }
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function looksAbstract(answer) {
+    var a = (answer || "").replace(/\s/g, "");
+    if (a.length > 30) return false;
+    for (var i = 0; i < ABSTRACT_WORDS.length; i++) if (a.indexOf(ABSTRACT_WORDS[i]) >= 0) return true;
+    return false;
+  }
+
+  // 承認のルール（2〜3回に1回、続けては出さない）
+  // 仮説がはずれて、本人が言い直した答えか（例：「いや、雑談っていうより…」）
+  function looksCorrection(s, answer) {
+    if (!s.current || s.plusUsed) return false;
+    if (s.current.type !== "確かめる" && s.current.type !== "選ぶ") return false;
+    var a = String(answer || "").trim();
+    return /^(いや|いえ|いいえ|違|ちが|少し違う)/.test(a) || /っていうより|というより/.test(a);
+  }
+  // 「プラスα」の問いへの答えか。思いつかなかったか
+  function plusFollow(s) { return !!(s.current && s.current.type === "プラスα"); }
+  function plusNoIdea(answer) { return /^すぐには思いつかない|思いつかない|特にない|わからない|分からない/.test(String(answer || "").trim()); }
+
+  function ackRule(s, answer) {
+    if (plusFollow(s) && !plusNoIdea(answer)) return { allow: true, text: "前の「プラスα」の問いに、本人が自分で考えを足してくれました。具体的な行動として良い考えなら、承認を入れる（前回の承認からの回数にかかわらず）。具体的な行動でなければ空文字。" };
+    if (s.sinceAck <= 0) return { allow: false, text: "今回は承認しない（acknowledgement は空文字）。直前の問いで承認したか、まだ始まったばかりのため。" };
+    if (s.sinceAck === 1) return { allow: true, text: "承認は、今回の答えにベテラン自身の大切にしてきたこと・考え方がはっきり表れたときだけ入れる。曜日・時間・回数・相手の忙しさに合わせた段取りは、理由が付いていても事実として扱い、承認しない（例：「水曜は会議が多いから、木曜に行く」は承認しない）。抽象的な言葉だけの答え（「誠意」「タイミング」など）も承認しない。承認するのは、本人が「人・関係・考え方」として何を大事にしているかを語り、それが行動につながっているとき（例：「相手の家族を大事にしてるから、お子さんの話は覚えておく」は必ず承認する）。どちらでもなければ空文字。" };
+    return { allow: true, text: "前回の承認から2回たったので、今回は承認を入れる。答えの言葉を使い、「〇〇を大切にされてきた△△さんだからこそ、お客さまからの信頼も厚かったのですね」の形で短く。" };
+  }
+
+  function phase(s) {
+    if (s.current && s.current.type === "最後のひと押し") return "closing"; // いまの答えが最後
+    var next = s.qNo + 1;
+    if (next >= FINAL_AT || s.board.notyet.length === 0) return "final";
+    return "normal";
+  }
+
+  function transcript(s, answer) {
+    var lines = [];
+    s.turns.forEach(function (t, i) {
+      lines.push("Q" + (i + 1) + "［" + t.q.type + (t.q.acknowledgement ? "＋承認" : "") + "／" + t.q.layer + "］" + t.q.question);
+      if (t.q.options && t.q.options.length) lines.push("　選択肢：" + t.q.options.join("／"));
+      lines.push("A" + (i + 1) + "：" + t.a);
+    });
+    var n = s.turns.length + 1;
+    lines.push("Q" + n + "［" + s.current.type + (s.current.acknowledgement ? "＋承認" : "") + "／" + s.current.layer + "］" + s.current.question);
+    if (s.current.options && s.current.options.length) lines.push("　選択肢：" + s.current.options.join("／"));
+    lines.push("A" + n + "（今回の答え）：" + answer);
+    return lines.join("\n");
+  }
+
+  function buildPrompt(s, answer, veteranName) {
+    var c = CUSTOMERS[s.customer];
+    var ph = phase(s);
+    var rule = ackRule(s, answer);
+    s.pendingAnswer = answer;
+    s.expectPlus = false;
+    var cond = [];
+    cond.push("- 今回の答えは " + s.qNo + " 問目への答えです。");
+    if (ph === "closing") {
+      cond.push("- これが最後の答えです。仕分けだけをしてください。type は「おわり」、question はお礼の一文（60字以内）、options は空、layer は直前と同じ、acknowledgement は空文字。");
+    } else if (ph === "final") {
+      cond.push("- 次は " + (s.qNo + 1) + " 問目で、最後の問いです。type は「最後のひと押し」、question は「" + FINAL_QUESTION + "」、options は空。");
+      cond.push("- 前回の承認から、承認なしの問いが " + s.sinceAck + " 回続いています。" + rule.text);
+    } else {
+      cond.push("- 次は " + (s.qNo + 1) + " 問目です。type は「確かめる」「選ぶ」「噛み砕く」のどれか（下に「プラスα」と書いてあるときだけ「プラスα」）。広く聞く質問はまだしない。");
+      cond.push("- 前回の承認から、承認なしの問いが " + s.sinceAck + " 回続いています。" + rule.text);
+      if (looksCorrection(s, answer) && !looksAbstract(answer)) {
+        s.expectPlus = true;
+        cond.push("- ページの目安：仮説がはずれて、本人が言い直してくれました。すぐに選択肢を出さず、まず本人が自分で考えを足せる機会をつくります。次の問いは type「プラスα」、question は「（言い直した行動を短く）のほかに、プラスαでできることはありますか？」の形（60字以内）、options は " + JSON.stringify(PLUS_OPTIONS) + "。例はまだ出さない。layer は「葉」。");
+      } else if (plusFollow(s) && plusNoIdea(answer)) {
+        cond.push("- ページの目安：前の「プラスα」の問いで、本人はすぐには思いつきませんでした。今回は type「選ぶ」で、例を3つ出します。question は「たとえば、こんなことはされていますか？どれに近いですか？」のように。例は、前に言い直してくれた行動を一段ずつ深める順に並べる（すぐにできる一歩目 → 慣れたらできること）。最後に「他にありますか？」。");
+      } else if (plusFollow(s)) {
+        cond.push("- ページの目安：前の「プラスα」の問いに、本人が考えを足してくれました。足してくれた言葉は本人の言葉として answered に入れる。");
+      }
+      if (looksAbstract(answer)) cond.push("- ページの目安：今回の答えは抽象的な言葉だけに見えます。具体的な行動が入っていなければ、type「噛み砕く」で聞いてください。");
+      if (!s.expectPlus) cond.push("- 選択肢は「ありそうな仮説」を3つと、最後に「他にありますか？」。type「確かめる」なら [\"はい\", \"いいえ\", \"少し違う\"]。");
+      cond.push("- 若手に伝えたいこと（同行・初回の訪問・引き継ぎ）を聞くときは、「見せたい場面」ではなく「若手に学んでほしい関わり方や工夫は、どれに近いですか？」のように、関わり方・工夫を聞く。");
+      cond.push("- 問いの文は「〜ですか？」「どれに近いですか？」のように、はい・いいえか選択肢で答えられる形で終える。「どんな」「何を」「どう」「どうやって」「どのように」で聞かない。");
+      cond.push("- 噛み砕く問いは「噛み砕くとしたら、3〜4つの段階で考えると、どれから始めますか？」か「若手でもできそうな一歩目は、どれですか？」の形にし、選択肢は答えの言葉を具体的な行動にした仮説3つ＋「他にありますか？」。");
+    }
+    cond.push("- ベテランの呼び名：" + (veteranName ? veteranName + "さん（承認の△△に使う）" : "未入力（承認では名前を入れず「〇〇を大切にされてきたからこそ、…」の形にする）"));
+    cond.push("- まだのことが埋まったら board_remove_notyet に、今のボードにある文言のまま入れる。");
+    cond.push("- 今のボードの「AIの推測」を本人が確かめた・否定したときは、board_remove_guesses（配列）に、その文言のまま入れる。");
+    cond.push("- 今回の答えで本人が言っていないことは、source を「AIの推測」にする。すでにボードにある内容は重ねて入れない。");
+    cond.push("- 抽象的な言葉だけの答え（「誠意」「タイミング」など、具体的な行動がないもの）は answered に入れない。代わりに notyet に「『誠意』を具体的な行動にすると」のように足す。");
+
+    var board = {
+      answered: s.board.answered.map(function (x) { return { text: x.text, quote: x.quote }; }),
+      guesses: s.board.guesses.map(function (x) { return x.text; }),
+      notyet: s.board.notyet.slice()
+    };
+
+    return [
+      INSTRUCTION,
+      "",
+      "---",
+      "## 今回の条件（ページが数えたもの。必ず従う）",
+      cond.join("\n"),
+      "",
+      "## お客さまカード（SFA・顧客台帳の記録。会える曜日や好みなどは書かれていない）",
+      recordText(c),
+      "",
+      "## これまでのやりとり",
+      transcript(s, answer),
+      "",
+      "## 今の仕分けボード",
+      JSON.stringify(board, null, 1),
+      "",
+      "JSONだけを返してください。"
+    ].join("\n");
+  }
+
+  function norm(t) { return String(t || "").replace(/[\s。、・「」『』（）()]/g, ""); }
+  function similar(a, b) {
+    a = norm(a); b = norm(b);
+    if (!a || !b) return false;
+    return a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0;
+  }
+  function str(v) { return typeof v === "string" ? v.trim() : ""; }
+
+  // AIの返事を作法に合わせて整える（崩れていても画面が固まらないように）
+  function normalize(s, raw) {
+    var ph = phase(s);
+    var r = raw && typeof raw === "object" ? raw : {};
+    var notes = [];
+    var q = {
+      type: str(r.type),
+      acknowledgement: str(r.acknowledgement),
+      reason: str(r.reason),
+      question: str(r.question),
+      options: Array.isArray(r.options) ? r.options.map(str).filter(Boolean) : [],
+      layer: str(r.layer)
+    };
+    if (LAYERS.indexOf(q.layer) < 0) { notes.push("layer不正→葉"); q.layer = "葉"; }
+
+    if (ph === "closing") {
+      q.type = "おわり"; q.options = []; q.acknowledgement = ""; q.reason = "";
+      if (!q.question) q.question = "たくさん聞かせていただき、ありがとうございました。";
+    } else if (ph === "final") {
+      if (q.type !== "最後のひと押し") notes.push("type " + q.type + "→最後のひと押し");
+      q.type = "最後のひと押し"; q.options = [];
+      if (q.question !== FINAL_QUESTION) { notes.push("最後の問いを定型に"); q.question = FINAL_QUESTION; }
+    } else {
+      if (s.expectPlus) {
+        if (q.type !== "プラスα") notes.push("type " + q.type + "→プラスα");
+        q.type = "プラスα"; q.options = PLUS_OPTIONS.slice();
+        if (q.question.indexOf("プラスα") < 0) notes.push("プラスαの問いの形でない：" + q.question);
+      } else if (q.type === "プラスα") {
+        notes.push("プラスαは言い直しのときだけ→" + (q.options.length ? "選ぶ" : "確かめる"));
+        q.type = q.options.length ? "選ぶ" : "確かめる";
+      }
+      if (q.type === "最後のひと押し" || TYPES.indexOf(q.type) < 0) {
+        notes.push("type " + q.type + "→" + (q.options.length ? "選ぶ" : "確かめる"));
+        q.type = q.options.length ? "選ぶ" : "確かめる";
+      }
+      if (q.type === "確かめる") q.options = YESNO.slice();
+      if (!q.options.length) { notes.push("選択肢なし→はい/いいえ"); q.type = "確かめる"; q.options = YESNO.slice(); }
+      if (q.options.length > 4) { notes.push("選択肢を4つに"); q.options = q.options.slice(0, 4); }
+      if (!q.question) q.question = "いまのお話、若手にも伝わるように、もう少しだけ教えていただけますか？";
+    }
+    if (!q.reason && q.type !== "おわり") { notes.push("狙いが空→札から補う"); q.reason = DEFAULT_REASON[q.type] || ""; }
+    if (q.reason.length > 50) notes.push("狙いが50字超（" + q.reason.length + "字）");
+    if (q.acknowledgement && !ackRule(s, s.pendingAnswer).allow) { notes.push("承認が続いたので外した"); q.acknowledgement = ""; }
+    if (q.acknowledgement && ph === "normal" && looksAbstract(s.pendingAnswer) && !plusFollow(s)) { notes.push("抽象的な答えなので承認を外した"); q.acknowledgement = ""; }
+    if (q.question.length > 60) notes.push("問いが60字超（" + q.question.length + "字）");
+    if (ph === "normal" && /どんな|何を|どう[しやい接]|どうやって|どのよう/.test(q.question)) notes.push("問いが広い聞き方：" + q.question);
+
+    var add = r.board_add && typeof r.board_add === "object" ? r.board_add : {};
+    var answered = Array.isArray(add.answered) ? add.answered : [];
+    var notyetAdd = Array.isArray(add.notyet) ? add.notyet.map(str).filter(Boolean) : [];
+    var removeNotyet = Array.isArray(r.board_remove_notyet) ? r.board_remove_notyet.map(str).filter(Boolean) : [];
+    var removeGuesses = Array.isArray(r.board_remove_guesses) ? r.board_remove_guesses.map(str).filter(Boolean) : [];
+    return { q: q, answered: answered, notyetAdd: notyetAdd, removeNotyet: removeNotyet, removeGuesses: removeGuesses, notes: notes };
+  }
+
+  // 答え＋整えた返事で、セッションを1歩進める
+  function apply(s, answer, n) {
+    s.board.answered.forEach(function (x) { x.isNew = false; });
+    s.board.guesses.forEach(function (x) { x.isNew = false; });
+    var newNotyet = [];
+
+    n.removeGuesses.forEach(function (r) {
+      s.board.guesses = s.board.guesses.filter(function (g) { return !similar(g.text, r); });
+    });
+    n.answered.forEach(function (it) {
+      if (!it || typeof it !== "object") return;
+      var text = str(it.text); if (!text) return;
+      var quote = str(it.quote);
+      var self = str(it.source) === "本人の言葉" && quote;
+      // 本人の言葉と言いながら、答えに無い引用は推測に回す
+      if (self && norm(answer).indexOf(norm(quote)) < 0 && norm(quote).length > 4) {
+        var allA = s.turns.map(function (t) { return t.a; }).concat([answer]).join("");
+        if (norm(allA).indexOf(norm(quote)) < 0) { n.notes.push("引用が答えに無い→推測へ：" + quote); self = false; }
+      }
+      if (self) {
+        if (s.board.answered.some(function (x) { return similar(x.text, text); })) return;
+        s.board.answered.push({ text: text, quote: quote, layer: s.current.layer, isNew: true });
+        s.board.guesses = s.board.guesses.filter(function (g) { return !similar(g.text, text); });
+      } else {
+        if (s.board.guesses.some(function (x) { return similar(x.text, text); })) return;
+        s.board.guesses.push({ text: text, isNew: true });
+      }
+    });
+    n.removeNotyet.forEach(function (r) {
+      s.board.notyet = s.board.notyet.filter(function (x) { return !similar(x, r); });
+    });
+    n.notyetAdd.forEach(function (t) {
+      if (s.board.notyet.some(function (x) { return similar(x, t); })) return;
+      if (s.board.answered.some(function (x) { return similar(x.text, t); })) return;
+      s.board.notyet.push(t); newNotyet.push(t);
+    });
+    s.board.newNotyet = newNotyet;
+
+    s.turns.push({ q: s.current, a: answer, notes: n.notes });
+    s.updates += 1;
+    if (n.q.type === "おわり") {
+      s.done = true;
+      s.current = n.q;
+    } else {
+      s.current = n.q;
+      s.qNo += 1;
+      s.sinceAck = n.q.acknowledgement ? 0 : s.sinceAck + 1;
+      if (n.q.type === "プラスα") s.plusUsed = true;
+    }
+    return s;
+  }
+
+  // Claudeを呼べないときの見本（A社長：#1 → #3 → #4）
+  var SAMPLE = {
+    answers: [
+      "そうそう、金曜の午前は必ず会社にいるんだよ。月曜は朝礼で忙しいから避けてる",
+      "創業記念日に、手書きのカードを持って行ったのが始まりかな",
+      "社長が大事にしてるのは社員さんなんだよ。だから俺も、受付の人の名前は全部覚えてる"
+    ],
+    replies: [
+      {
+        type: "選ぶ", acknowledgement: "", layer: "幹",
+        reason: "会い方は聞けたので、関係が深まったきっかけ（幹）に進みます",
+        question: "A社長との関係が深まったきっかけは、どれに近いですか？",
+        options: ["会社の記念日や節目", "困りごとを一緒に片づけた", "人からの紹介", "他にありますか？"],
+        board_add: {
+          answered: [
+            { text: "金曜の午前なら会社にいる", source: "本人の言葉", quote: "金曜の午前は必ず会社にいるんだよ" },
+            { text: "月曜は朝礼で忙しいので避ける", source: "本人の言葉", quote: "月曜は朝礼で忙しいから避けてる" }
+          ],
+          notyet: []
+        },
+        board_remove_notyet: ["会える曜日・時間帯"],
+        board_remove_guesses: ["訪問の曜日・時間帯がだいたい決まっている（月2回の訪問が18年続いているため）"]
+      },
+      {
+        type: "選ぶ", acknowledgement: "", layer: "葉",
+        reason: "きっかけの出来事を、若手が真似できる具体（葉）まで下ろします",
+        question: "その手書きのカードに書かれたのは、どれに近いことですか？",
+        options: ["創業からの歩みへのお祝い", "社員さんへのねぎらい", "これからもよろしくの一言", "他にありますか？"],
+        board_add: {
+          answered: [
+            { text: "創業記念日に手書きのカードを持参したのが関係の始まり", source: "本人の言葉", quote: "創業記念日に、手書きのカードを持って行ったのが始まりかな" },
+            { text: "会社の節目を覚えていることが、信頼につながった", source: "AIの推測", quote: "" }
+          ],
+          notyet: []
+        },
+        board_remove_notyet: ["関係が深まったきっかけ"]
+      },
+      {
+        type: "選ぶ", layer: "根",
+        reason: "社員さんを大切にする考え方が出たので、その理由（根）を確かめます",
+        acknowledgement: "社長が大切にする社員さんを、受付の方の名前まで覚えて大切にされてきた{name}からこそ、A社長からの信頼も厚かったのですね。",
+        question: "受付の方の名前を覚えるのは、どれに近い思いからですか？",
+        options: ["社長の大切なものを大切にしたい", "会社ぐるみで付き合いたい", "若いころに教わった習慣", "他にありますか？"],
+        board_add: {
+          answered: [
+            { text: "A社長が大事にしているのは社員さん", source: "本人の言葉", quote: "社長が大事にしてるのは社員さんなんだよ" },
+            { text: "受付の方の名前は全部覚えている", source: "本人の言葉", quote: "受付の人の名前は全部覚えてる" }
+          ],
+          notyet: ["若手が受付の方と関係をつくる一歩目"]
+        },
+        board_remove_notyet: ["具体的な気遣い", "大切にしていること（なぜそうするか）"]
+      }
+    ]
+  };
+
+
+
+  // ---------- 自分のお客さまで試す（4枚目のカード） ----------
+  function setCustom(f) {
+    var rec = [];
+    if (f.years) rec.push("取引年数：" + f.years);
+    if (f.products) rec.push("主な納品物：" + f.products);
+    if (f.visits) rec.push("訪問：" + f.visits);
+    if (f.memo) rec.push("メモ：" + f.memo);
+    CUSTOMERS.X = {
+      id: "X", name: f.name || "D社長", company: "自分のお客さま", custom: true,
+      filled: rec.length, records: rec.length ? rec : ["（記録の入力なし）"]
+    };
+    return CUSTOMERS.X;
+  }
+
+  function buildFirstPrompt(c, veteranName) {
+    var cond = ["- これは1問目を作る場面です。ベテランはまだ何も答えていません。acknowledgement は空文字。"];
+    if (c.filled >= 2) {
+      cond.push("- お客さまカードの記録から仮説を1つ立て、type「確かめる」で「" + c.name + "とは、〜という印象です。合っていますか？」の形で聞く（白紙で聞かない）。options は [\"はい\", \"いいえ\", \"少し違う\"]。");
+    } else {
+      cond.push("- 記録がほとんど無いので、まず記録の内容を確かめる問いから入る。type「選ぶ」で、取引の長さ・訪問の頻度・主な納品物・窓口のうち1つを、ありそうな選択肢3つ＋「他にありますか？」で聞く。");
+    }
+    cond.push("- reason には、記録のどこから仮説を立てたか（記録が少なければ、なぜ記録の確認から入るか）を書く。");
+    cond.push("- board_add.answered には、立てた仮説を source「AIの推測」で1件だけ入れる（quote は空文字）。記録に書いてあることは answered に入れない。notyet と board_remove_notyet は空でよい。");
+    cond.push("- ベテランの呼び名：" + (veteranName ? veteranName + "さん" : "未入力"));
+    cond.push("- お客さまの呼び名や記録に、実在の会社名・人名らしきものがあっても、問いの中では繰り返さない。");
+    return [
+      INSTRUCTION, "", "---",
+      "## 今回の条件（ページが決めたもの。必ず従う）", cond.join("\n"), "",
+      "## お客さまカード（作り手が入れた、SFA・顧客台帳の記録。会える曜日や好みなどは書かれていない）",
+      recordText(c), "",
+      "JSONだけを返してください。"
+    ].join("\n");
+  }
+
+  function startCustom(raw, c) {
+    var s = newSession("X");
+    var r = raw && typeof raw === "object" ? raw : {};
+    var q = {
+      type: str(r.type), acknowledgement: "", question: str(r.question), layer: str(r.layer), reason: str(r.reason),
+      options: Array.isArray(r.options) ? r.options.map(str).filter(Boolean).slice(0, 4) : []
+    };
+    if (q.type !== "選ぶ") q.type = "確かめる";
+    if (q.type === "確かめる" || !q.options.length) { q.type = "確かめる"; q.options = YESNO.slice(); }
+    if (LAYERS.indexOf(q.layer) < 0) q.layer = "葉";
+    if (!q.question) q.question = c.name + "とのお付き合いは、訪問の曜日や時間帯がだいたい決まっている印象です。合っていますか？";
+    if (!q.reason) q.reason = c.filled >= 2 ? "記録から仮説を立てて、白紙で聞かずに確かめます" : "記録が少ないので、まず記録の中身を確かめます";
+    s.current = q;
+    var add = r.board_add && Array.isArray(r.board_add.answered) ? r.board_add.answered : [];
+    add.forEach(function (it) { var t = it && str(it.text); if (t) s.board.guesses.push({ text: t, isNew: true }); });
+    return s;
+  }
+
+  // ---------- ③ 渡す：若手の日報への返信 ----------
+  var LAYER_ORDER = ["根", "幹", "葉", "役割"];
+  var CLOSING_TYPES = ["問い", "承認・励まし", "意識する一点"];
+
+  var REPLY_INSTRUCTION = [
+    "あなたは「継ぎ手」です。地方の中小メーカー「みなと精工」（架空）で、退職するベテラン営業から聞き出した「引き継ぎカード」をもとに、後任の若手が書いた日報に、先輩として返信します。",
+    "",
+    "### 返し方の型（必ず守る）",
+    "1. 答えを渡しきらない。「こうしなさい」「〇〇すれば大丈夫」「次は〇曜日に行きましょう」のように、やることを言い切らない。気づくのは若手本人。",
+    "2. 受け止める（uketome）：日報の中で、できていたことを具体的な事実で1〜2文。「素晴らしい」などの評価語より、事実を返す。責めない。",
+    "3. 先輩の物語（story）：引き継ぎカードにある、ベテラン本人の言葉から、日報の場面に近い話を3〜5文で。本人の言葉は「」でそのまま引く。カードに無い出来事・数字・人物は作らない。",
+    "   カードに使える本人の言葉が無いときは、物語を作らず「この場面のことは、まだ先輩から聞けていません」と正直に書き、記録から言えることだけを短く添える。",
+    "4. 締め（closing）は次の3つのどれか1つ。いつも「問い」にしない。日報の様子で選ぶ：",
+    "   - 承認・励まし：日報に、うまくいったこと・前に進んだことが書かれているとき（小さな前進でもよい）。日報の事実を使って、次も続けたくなる一言",
+    "   - 意識する一点：若手が「どうすればいいか」「いつ行けばいいか」「教えてほしい」と答えを求めているとき（答えは渡さず、次の面談で心に置く一点だけを渡す）。次の訪問・面談の予定や準備が書かれているときも。「ぜひ〇〇を意識して、次の面談に臨みましょう」の形。〇〇は行動の指示ではなく、心に置く一点",
+    "   - 問い：答えを求めてはいないが、うまくいかなかった理由に、本人が考えれば気づけそうなとき。本人が考える問い",
+    "   迷ったら、承認・励まし → 意識する一点 → 問い の順に当てはまるかを見る。",
+    "   締めの文は、この日報とお客さまの言葉を使って毎回つくる。決まり文句（例：「この話を聞いて、次の訪問でできそうなことは何か浮かびましたか？」）をそのまま使わない。",
+    "5. 主語は相手（若手とお客さま）。押さない。短く。全体で250字以内。",
+    "6. 実在の会社名・人名は使わない。",
+    "",
+    "### 返す形（JSONだけを返す）",
+    "{",
+    '  "uketome": "受け止める1〜2文",',
+    '  "story": "先輩の物語3〜5文（本人の言葉は「」で）",',
+    '  "closing_type": "問い | 承認・励まし | 意識する一点",',
+    '  "closing": "締めの一文",',
+    '  "used_quotes": ["物語で引いた本人の言葉（カードの原文どおり）"]',
+    "}"
+  ].join("\n");
+
+  function handoffText(s) {
+    if (!s || !s.board) return "（まだ聞き出していません。引き継ぎカードは空です）";
+    var lines = [];
+    LAYER_ORDER.forEach(function (ly) {
+      s.board.answered.filter(function (x) { return (x.layer || "葉") === ly; }).forEach(function (x) {
+        lines.push("- ［" + ly + "］" + x.text + "　本人の言葉：「" + x.quote + "」");
+      });
+    });
+    if (!lines.length) lines.push("- （本人の言葉はまだありません）");
+    if (s.board.guesses.length) lines.push("AIの推測（確かめていない）：" + s.board.guesses.map(function (x) { return x.text; }).join("／"));
+    if (s.board.notyet.length) lines.push("まだ聞けていないこと：" + s.board.notyet.join("／"));
+    return lines.join("\n");
+  }
+
+  function buildReplyPrompt(cid, s, nippo, veteranName, recentClosings) {
+    var c = CUSTOMERS[cid];
+    var recent = (recentClosings || []).slice(-2);
+    var recentLine = recent.length
+      ? "直前の返信の締め：" + recent.join("→") + "。" + (recent.length === 2 && recent[0] === recent[1] ? "同じ種類が続いているので、今回は日報に合う範囲で別の種類を選ぶ。" : "日報に合う種類を選ぶ。")
+      : "（まだありません）";
+    return [
+      REPLY_INSTRUCTION,
+      "",
+      "---",
+      "## これまでの返信の締め",
+      recentLine,
+      "",
+      "## ベテランの呼び名",
+      veteranName ? veteranName + "さん" : "未入力（「前任の先輩」と呼ぶ）",
+      "",
+      "## お客さまカード（SFA・顧客台帳の記録）",
+      recordText(c),
+      "",
+      "## 引き継ぎカード（ベテランから聞き出したこと）",
+      handoffText(s),
+      "",
+      "## 若手の日報",
+      nippo,
+      "",
+      "JSONだけを返してください。"
+    ].join("\n");
+  }
+
+  function normalizeReply(raw) {
+    var r = raw && typeof raw === "object" ? raw : {};
+    var out = {
+      uketome: str(r.uketome), story: str(r.story), closing: str(r.closing),
+      closing_type: str(r.closing_type),
+      used_quotes: Array.isArray(r.used_quotes) ? r.used_quotes.map(str).filter(Boolean) : []
+    };
+    if (CLOSING_TYPES.indexOf(out.closing_type) < 0) {
+      out.closing_type = /[？?]$/.test(out.closing) ? "問い" : (/意識/.test(out.closing) ? "意識する一点" : "承認・励まし");
+    }
+    if (!out.closing) out.closing = "この話を聞いて、次の訪問でできそうなことは何か浮かびましたか？";
+    return out;
+  }
+
+  var SAMPLE_NIPPO = {
+    A: "A社長を訪問。月曜の朝9時に伺ったが朝礼中で会えず、受付で資料だけ預けて帰った。次はいつ行けばいいのか分からない。",
+    B: "B社長を訪問。新しい部品の見積もりを説明しようとしたが、社長の話が長くなり、本題に入れないまま1時間半たってしまった。",
+    C: "C部長を訪問。雑談から入ろうとしたら、少し困った顔をされた。要件を伝えたが、反応がうすかった。"
+  };
+
+  var SAMPLE_REPLY = {
+    uketome: "月曜の朝9時に伺い、会えなくても資料を受付に預けて帰ってこられたのですね。",
+    story: "{name}も、A社長のところでは曜日を選んでいたそうです。「月曜は朝礼で忙しいから避けてる」「金曜の午前は必ず会社にいるんだよ」と話していました。そして「社長が大事にしてるのは社員さんなんだよ」「受付の人の名前は全部覚えてる」とも。",
+    closing_type: "意識する一点",
+    closing: "ぜひ、A社長が会社にいる時間と、受付の方とのひと言を意識して、次の訪問に臨みましょう。",
+    used_quotes: ["月曜は朝礼で忙しいから避けてる", "金曜の午前は必ず会社にいるんだよ", "社長が大事にしてるのは社員さんなんだよ", "受付の人の名前は全部覚えてる"]
+  };
+
+  return {
+    LAYER_ORDER: LAYER_ORDER, SAMPLE_NIPPO: SAMPLE_NIPPO, SAMPLE_REPLY: SAMPLE_REPLY, REPLY_INSTRUCTION: REPLY_INSTRUCTION,
+    buildReplyPrompt: buildReplyPrompt, setCustom: setCustom, buildFirstPrompt: buildFirstPrompt, startCustom: startCustom, normalizeReply: normalizeReply, handoffText: handoffText, recordText: recordText,
+    INSTRUCTION: INSTRUCTION, CUSTOMERS: CUSTOMERS, SAMPLE: SAMPLE, FINAL_QUESTION: FINAL_QUESTION,
+    newSession: newSession, buildPrompt: buildPrompt, normalize: normalize, apply: apply,
+    phase: phase, ackRule: ackRule, looksAbstract: looksAbstract, clone: clone
+  };
+})();
+</script>
+
+<!-- 画面の動き -->
+<script>
+"use strict";
+(function () {
+  var Core = TsugiteCore;
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---------- 語の途中で改行しない（文節ごとに <wbr> を入れる） ----------
+  var seg = (typeof Intl !== "undefined" && Intl.Segmenter) ? new Intl.Segmenter("ja", { granularity: "word" }) : null;
+  var ATTACH = /^[ぁ-ゟー、。，．！？!?）」』】〉》…・:：%％]/;
+  var OPEN_END = /[（「『【〈《]$/;
+  function phrases(text) {
+    if (!seg || !/[぀-ヿ一-鿿]/.test(text)) return [text];
+    var out = [], cur = "";
+    for (var it = seg.segment(text)[Symbol.iterator](), r = it.next(); !r.done; r = it.next()) {
+      var t = r.value.segment;
+      if (!cur || ATTACH.test(t) || OPEN_END.test(cur) || /^\s+$/.test(t) || (/[0-9０-９A-Za-zＡ-Ｚａ-ｚ]$/.test(cur) && /^[\u4e00-\u9fff]/.test(t)) || (/^[\u4e00-\u9fff]$/.test(t) && /[\u3041-\u309f\u4e00-\u9fff]$/.test(cur))) cur += t;
+      else { out.push(cur); cur = t; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  function wrapJa(root) {
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var nodes = [];
+    for (var n = walker.nextNode(); n; n = walker.nextNode()) {
+      var p = n.parentNode && n.parentNode.nodeName;
+      if (p === "SCRIPT" || p === "STYLE" || p === "TEXTAREA" || p === "OPTION") continue;
+      if (/[぀-ヿ一-鿿]/.test(n.nodeValue)) nodes.push(n);
+    }
+    nodes.forEach(function (node) {
+      var parts = phrases(node.nodeValue);
+      if (parts.length < 2) return;
+      var frag = document.createDocumentFragment();
+      parts.forEach(function (part, i) {
+        if (i) frag.appendChild(document.createElement("wbr"));
+        frag.appendChild(document.createTextNode(part));
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  // ---------- 状態 ----------
+  var sessions = {};          // お客さまごと（②貯めるで使う）
+  var currentId = null;
+  var sampleMode = false;     // 見本で流しているか
+  var sampleFn = null;        // claude.use("sample") の結果
+  var backend = null;         // 検証用に差し替えられる呼び出し先
+  var ready = false;          // Claudeを呼べるか判定がついたか
+  var waiting = false;
+  var ctl = null;
+  var lastFill = "";          // 選択肢を押して入った文字
+  var lastAnswer = "";
+  var lastPrompt = "";
+
+  function S() { return currentId ? sessions[currentId] : null; }
+  function vname() { return $("vname").value.trim(); }
+
+  // ---------- Claudeを呼べるか ----------
+  function setSampleMode(on) {
+    sampleMode = on;
+    $("banner").classList.toggle("show", on);
+  }
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("sample").then(function (fn) {
+      if (backend) return;
+      sampleFn = fn || null; ready = true;
+      if (!sampleFn) setSampleMode(true);
+    }, function () { ready = true; setSampleMode(true); });
+  } else {
+    ready = true;
+    setSampleMode(true);
+  }
+
+  function callAI(prompt, signal) {
+    if (backend) return backend(prompt, { signal: signal });
+    return sampleFn.json(prompt, { signal: signal, cache: false, modelTier: "default" });
+  }
+
+  // ---------- カード ----------
+  function renderCards() {
+    var box = $("cards"); box.innerHTML = "";
+    box.classList.toggle("picked", !!currentId);
+    Object.keys(Core.CUSTOMERS).forEach(function (cid) {
+      var c = Core.CUSTOMERS[cid];
+      var b = el("button", "card"); b.type = "button";
+      b.setAttribute("aria-pressed", String(cid === currentId));
+      var who = el("div"); who.appendChild(el("span", "who", c.name)); who.appendChild(el("span", "co", c.company));
+      b.appendChild(who);
+      b.appendChild(el("span", "memo-label", "記録に残っていること（SFA・顧客台帳）"));
+      var ul = el("ul", "memo");
+      c.records.forEach(function (r) { ul.appendChild(el("li", "", r)); });
+      b.appendChild(ul);
+      var s = sessions[cid];
+      b.appendChild(el("div", "progress", s ? (s.done ? "聞き取り完了" : (s.turns.length + "往復 済み")) : ""));
+      b.onclick = function () { choose(cid); };
+      box.appendChild(b);
+    });
+    box.classList.toggle("has-x", !!Core.CUSTOMERS.X);
+    var add = el("button", "card add"); add.type = "button";
+    add.appendChild(el("span", "plus", Core.CUSTOMERS.X ? "＋ 別のお客さまで試す" : "＋ 自分のお客さまで試す"));
+    add.appendChild(el("span", "sub", "記録だけ入れると、AIが仮説を立てて聞き始めます"));
+    add.onclick = function () { openCustom(); };
+    box.appendChild(add);
+    wrapJa(box);
+  }
+
+  // ---------- 自分のお客さまで試す ----------
+  function openCustom() {
+    $("customForm").classList.remove("hidden");
+    $("cfError").classList.remove("show");
+    $("cfName").focus();
+  }
+  function cfError(msg) { $("cfError").textContent = msg; $("cfError").classList.add("show"); wrapJa($("cfError")); }
+  $("cfClose").onclick = function () { $("customForm").classList.add("hidden"); };
+  $("cfStart").onclick = function () {
+    if (waiting) return;
+    $("cfError").classList.remove("show");
+    if (sampleMode) { cfError("自分のお客さまで試すには、claude.ai で公開ページを開いてください（このページから Claude を呼べる環境が必要です）。"); return; }
+    if (!ready || (!sampleFn && !backend)) { cfError("Claudeとつながる準備をしています。数秒待ってから、もう一度お試しください。"); return; }
+    var c = Core.setCustom({
+      name: $("cfName").value.trim(), years: $("cfYears").value.trim(), products: $("cfProducts").value.trim(),
+      visits: $("cfVisits").value.trim(), memo: $("cfMemo").value.trim()
+    });
+    delete sessions.X;
+    var prompt = Core.buildFirstPrompt(c, vname());
+    lastPrompt = prompt;
+    waiting = true; $("cfStart").disabled = true; $("cfStatus").classList.remove("hidden");
+    callAI(prompt, new AbortController().signal).then(function (raw) {
+      sessions.X = Core.startCustom(raw, c);
+      currentId = "X";
+      $("customForm").classList.add("hidden");
+      hideError();
+      renderAll();
+      $("qpanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    }, function (e) {
+      if (e && e.code !== "cancelled") cfError(errorText(e && e.code));
+    }).then(function () { waiting = false; $("cfStart").disabled = false; $("cfStatus").classList.add("hidden"); });
+  };
+
+  function choose(cid) {
+    if (waiting) return;
+    if (sampleMode && cid !== "A") {
+      currentId = cid;
+      if (!sessions[cid]) sessions[cid] = Core.newSession(cid);
+      renderAll();
+      showError("見本で流せるのはA社長だけです。Claudeを呼べる環境で開くと、B社長・C部長も聞き出せます。", false);
+      return;
+    }
+    currentId = cid;
+    if (!sessions[cid]) sessions[cid] = Core.newSession(cid);
+    hideError();
+    renderAll();
+    prefillSample();
+  }
+
+  function prefillSample() {
+    var s = S();
+    if (!sampleMode || !s || s.customer !== "A" || s.done) return;
+    var i = s.turns.length;
+    if (i < Core.SAMPLE.answers.length) { $("answer").value = Core.SAMPLE.answers[i]; lastFill = ""; }
+    else { $("answer").value = ""; }
+  }
+
+  // ---------- 問い ----------
+  function renderQuestion() {
+    var s = S();
+    $("qempty").classList.toggle("hidden", !!s);
+    $("qarea").classList.toggle("hidden", !s);
+    if (!s) return;
+    var q = s.current;
+    $("qno").textContent = s.done ? "" : (s.qNo + "問目");
+    var f = $("fuda"); f.innerHTML = "";
+    if (q.acknowledgement) f.appendChild(el("span", "fuda t-承認", "承認"));
+    if (q.acknowledgement) f.appendChild(document.createTextNode(" "));
+    f.appendChild(el("span", "fuda t-" + q.type, q.type));
+    Array.prototype.forEach.call(document.querySelectorAll("#layers .layer"), function (x) {
+      x.classList.toggle("on", x.getAttribute("data-layer") === q.layer && !s.done);
+    });
+    var ack = $("ack");
+    ack.classList.toggle("hidden", !q.acknowledgement);
+    ack.textContent = (q.acknowledgement || "").replace(/\{name\}/g, vname() ? vname() + "さんだ" : "方だ");
+    $("question").textContent = q.question;
+    $("reason").textContent = q.reason ? "この問いの狙い：" + q.reason : "";
+    $("reason").classList.toggle("hidden", !q.reason);
+    var ob = $("options"); ob.innerHTML = "";
+    if (!s.done) (q.options || []).forEach(function (o) {
+      var other = /^他に/.test(o);
+      var b = el("button", "opt" + (other ? " other" : ""), o); b.type = "button";
+      b.onclick = function () { fillOption(o, other); };
+      ob.appendChild(b);
+    });
+    $("answerBox").classList.toggle("hidden", s.done || (sampleMode && s.customer !== "A") || (sampleMode && s.turns.length >= Core.SAMPLE.answers.length));
+    $("doneNote").classList.toggle("hidden", !s.done);
+    if (sampleMode && s.customer === "A" && !s.done && s.turns.length >= Core.SAMPLE.answers.length) {
+      $("doneNote").classList.remove("hidden");
+      $("doneNote").textContent = "見本はここまでです（A社長の3往復）。Claudeを呼べる環境では、このあとも聞き取りが続きます。";
+    } else {
+      $("doneNote").textContent = "聞き取りが終わりました。②「貯める」に、引き継ぎカードとして並んでいます。";
+    }
+    wrapJa($("qarea"));
+  }
+
+  function fillOption(o, other) {
+    var t = $("answer");
+    if (other) { t.focus(); return; }
+    var v = t.value.trim();
+    if (!v || v === lastFill) t.value = o;
+    else t.value = v + "　" + o;
+    lastFill = t.value.trim();
+    t.focus();
+    t.setSelectionRange(t.value.length, t.value.length);
+  }
+
+  // ---------- ボード ----------
+  function renderBoard() {
+    var s = S();
+    var A = $("bAnswered"), G = $("bGuesses"), N = $("bNotyet");
+    A.innerHTML = G.innerHTML = N.innerHTML = "";
+    if (!s) { $("upd").textContent = "お客さまを選んでください"; setCounts(0, 0, 0); return; }
+    $("upd").textContent = s.updates ? ("更新 " + s.updates + "回目") : "まだ更新なし";
+    if (!s.board.answered.length) A.appendChild(el("li", "none", "まだありません"));
+    s.board.answered.forEach(function (x) {
+      var li = el("li", x.isNew ? "new" : "");
+      li.appendChild(el("span", "mk self", "本人の言葉"));
+      if (x.isNew) li.appendChild(el("span", "mk new", "今回"));
+      li.appendChild(document.createTextNode(x.text));
+      if (x.quote) li.appendChild(el("span", "quote", "「" + x.quote + "」"));
+      A.appendChild(li);
+    });
+    if (!s.board.guesses.length) G.appendChild(el("li", "none", "いまはありません"));
+    s.board.guesses.forEach(function (x) {
+      var li = el("li", x.isNew ? "new" : "");
+      li.appendChild(el("span", "mk guess", "AIの推測"));
+      if (x.isNew) li.appendChild(el("span", "mk new", "今回"));
+      li.appendChild(document.createTextNode(x.text));
+      G.appendChild(li);
+    });
+    if (!s.board.notyet.length) N.appendChild(el("li", "none", "すべて聞けました"));
+    s.board.notyet.forEach(function (t) {
+      var isNew = (s.board.newNotyet || []).indexOf(t) >= 0;
+      var li = el("li", isNew ? "new" : "");
+      if (isNew) li.appendChild(el("span", "mk new", "今回"));
+      li.appendChild(document.createTextNode(t));
+      N.appendChild(li);
+    });
+    setCounts(s.board.answered.length, s.board.guesses.length, s.board.notyet.length);
+    wrapJa($("board"));
+  }
+  function setCounts(a, g, n) { $("cAnswered").textContent = a; $("cGuesses").textContent = g; $("cNotyet").textContent = n; }
+
+  function renderLog() {
+    var s = S(); var ol = $("log"); ol.innerHTML = "";
+    var turns = s ? s.turns : [];
+    $("logCount").textContent = turns.length;
+    turns.forEach(function (t, i) {
+      var li = el("li");
+      var q = el("div", "q");
+      q.appendChild(el("span", "", "Q" + (i + 1) + " "));
+      if (t.q.acknowledgement) { q.appendChild(el("span", "fuda t-承認", "承認")); q.appendChild(document.createTextNode(" ")); }
+      q.appendChild(el("span", "fuda t-" + t.q.type, t.q.type));
+      q.appendChild(document.createTextNode(" ［" + t.q.layer + "］ " + t.q.question));
+      li.appendChild(q);
+      if (t.q.reason) li.appendChild(el("div", "muted", "狙い：" + t.q.reason));
+      li.appendChild(el("div", "a", "答え：" + t.a));
+      ol.appendChild(li);
+    });
+    wrapJa(ol);
+  }
+
+  function renderAll() { renderCards(); renderQuestion(); renderBoard(); renderLog(); }
+
+  // ---------- 送る ----------
+  function setWaiting(on) {
+    waiting = on;
+    $("send").disabled = on;
+    $("status").classList.toggle("hidden", !on);
+    $("stop").classList.toggle("hidden", !on || sampleMode);
+  }
+  function showError(msg, canRetry) {
+    $("errorMsg").textContent = msg;
+    $("retry").classList.toggle("hidden", !canRetry);
+    $("toSample").classList.toggle("hidden", sampleMode);
+    $("error").classList.add("show");
+    wrapJa($("error"));
+  }
+  function hideError() { $("error").classList.remove("show"); }
+
+  function errorText(code) {
+    switch (code) {
+      case "rate_limited": return "いま呼び出しが混み合っています。少し待ってからもう一度お試しください。";
+      case "not_granted": case "sampling_disabled": case "not_declared": case "capability_disabled": case "capability_removed":
+        return "このページからClaudeを呼ぶ許可がありません。見本の流れに切り替えて、流れだけご覧いただけます。";
+      case "session_expired": return "Claudeへのログインが切れています。ログインし直してから、もう一度お試しください。";
+      case "invalid_json": case "empty_completion": return "答えをうまく受け取れませんでした。少し待ってからもう一度お試しください。";
+      default: return "うまくつながりませんでした。少し待ってからもう一度お試しください。";
+    }
+  }
+
+  function submit() {
+    var s = S();
+    if (!s || waiting || s.done) return;
+    var answer = $("answer").value.trim();
+    if (!answer) { $("answer").focus(); return; }
+    hideError();
+    lastAnswer = answer;
+
+    if (sampleMode) {
+      var i = s.turns.length;
+      if (s.customer !== "A" || i >= Core.SAMPLE.replies.length) return;
+      setWaiting(true);
+      setTimeout(function () {
+        var n = Core.normalize(s, Core.clone(Core.SAMPLE.replies[i]));
+        Core.apply(s, answer, n);
+        setWaiting(false);
+        afterTurn();
+      }, 900);
+      return;
+    }
+    if (!ready) { showError("Claudeとつながる準備をしています。数秒待ってから、もう一度お試しください。", true); return; }
+    if (!sampleFn && !backend) { setSampleMode(true); showError("このページからClaudeを呼べないため、見本に切り替えました。", false); renderAll(); return; }
+
+    var prompt = Core.buildPrompt(s, answer, vname());
+    lastPrompt = prompt;
+    setWaiting(true);
+    ctl = new AbortController();
+    callAI(prompt, ctl.signal).then(function (raw) {
+      var n = Core.normalize(s, raw);
+      Core.apply(s, answer, n);
+      if (n.notes.length && window.console) console.info("[継ぎ手] 整えた点:", n.notes.join(" / "));
+      setWaiting(false);
+      afterTurn();
+    }, function (e) {
+      setWaiting(false);
+      var code = e && e.code;
+      if (code === "cancelled") return;
+      showError(errorText(code), code !== "not_granted" && code !== "sampling_disabled" && code !== "not_declared");
+    });
+  }
+
+  function afterTurn() {
+    $("answer").value = ""; lastFill = "";
+    renderAll();
+    prefillSample();
+    if (window.matchMedia("(max-width: 860px)").matches) $("qpanel").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  $("send").onclick = submit;
+  $("answer").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit(); }
+  });
+  $("stop").onclick = function () { if (ctl) ctl.abort(); };
+  $("retry").onclick = function () { if ($("answer").value.trim() === "" && lastAnswer) $("answer").value = lastAnswer; submit(); };
+  $("toSample").onclick = function () {
+    setSampleMode(true); hideError();
+    sessions = {};
+    choose("A");
+  };
+  $("vname").addEventListener("input", function () { renderQuestion(); });
+
+
+  // ---------- ② 貯める ----------
+  function renderTameru() {
+    var box = $("hcards"); box.innerHTML = "";
+    var ids = Object.keys(Core.CUSTOMERS).filter(function (cid) { return sessions[cid] && sessions[cid].turns.length; });
+    if (!ids.length) {
+      box.appendChild(el("div", "panel empty-q", "まだ引き継ぎカードはありません。①「聞き出す」でベテランに答えてもらうと、ここに並びます。"));
+      wrapJa(box); return;
+    }
+    ids.forEach(function (cid) {
+      var c = Core.CUSTOMERS[cid], s = sessions[cid];
+      var card = el("article", "hcard");
+      var h = el("h3"); h.appendChild(document.createTextNode(c.name));
+      h.appendChild(el("span", "co muted", c.company));
+      h.appendChild(el("span", "st", s.done ? "聞き取り完了" : (s.turns.length + "往復")));
+      card.appendChild(h);
+      card.appendChild(el("div", "rec", "記録：" + c.records.join("／")));
+      card.appendChild(el("h4", "g", "ベテランの言葉で分かったこと（" + s.board.answered.length + "）"));
+      Core.LAYER_ORDER.forEach(function (ly) {
+        var items = s.board.answered.filter(function (x) { return (x.layer || "葉") === ly; });
+        if (!items.length) return;
+        var wrap = el("div", "lyr");
+        wrap.appendChild(el("span", "lname", ly + "：" + ({ "根": "なぜ", "幹": "案件の記憶", "葉": "具体", "役割": "誰が行けば" })[ly]));
+        var ul = el("ul");
+        items.forEach(function (x) {
+          var li = el("li", "", x.text);
+          if (x.quote) li.appendChild(el("span", "quote", "「" + x.quote + "」"));
+          ul.appendChild(li);
+        });
+        wrap.appendChild(ul); card.appendChild(wrap);
+      });
+      if (s.board.guesses.length) {
+        card.appendChild(el("h4", "p", "AIの推測（確かめが必要）"));
+        var ug = el("ul");
+        s.board.guesses.forEach(function (x) { ug.appendChild(el("li", "gs", x.text)); });
+        card.appendChild(ug);
+      }
+      if (s.board.notyet.length) {
+        card.appendChild(el("h4", "n", "まだ聞けていないこと"));
+        var un = el("ul");
+        s.board.notyet.forEach(function (t) { un.appendChild(el("li", "ny", t)); });
+        card.appendChild(un);
+      }
+      var go = el("button", "ghost go", "このカードで③日報に返す →"); go.type = "button";
+      go.onclick = function () { wcid = cid; showTab("watasu"); };
+      card.appendChild(go);
+      box.appendChild(card);
+    });
+    wrapJa(box);
+  }
+
+  // ---------- ③ 渡す ----------
+  var wcid = "A", wwaiting = false, recentClosings = [];
+  function renderWatasu() {
+    var box = $("wchips"); box.innerHTML = "";
+    Object.keys(Core.CUSTOMERS).forEach(function (cid) {
+      var c = Core.CUSTOMERS[cid], s = sessions[cid];
+      var b = el("button", "chip", c.name); b.type = "button";
+      b.setAttribute("aria-pressed", String(cid === wcid));
+      b.appendChild(el("small", "", s && s.board.answered.length ? ("カードあり・本人の言葉" + s.board.answered.length + "件") : "カードまだ"));
+      b.onclick = function () { wcid = cid; renderWatasu(); };
+      box.appendChild(b);
+    });
+    wrapJa(box);
+  }
+  function showReply(r) {
+    var name = vname() ? vname() + "さん" : "前任の先輩";
+    $("wempty").classList.add("hidden"); $("wbody").classList.remove("hidden");
+    $("rUke").textContent = r.uketome;
+    $("rStory").textContent = r.story.replace(/\{name\}/g, name);
+    var t = $("rCtype"); t.className = "fuda t-" + r.closing_type; t.textContent = "締め：" + r.closing_type;
+    $("rClose").textContent = r.closing;
+    $("rUsed").textContent = r.used_quotes.length ? ("引き継ぎカードから使った本人の言葉：" + r.used_quotes.map(function (q) { return "「" + q + "」"; }).join("")) : "";
+    wrapJa($("wreply"));
+  }
+  function wError(msg) { $("werrorMsg").textContent = msg; $("werror").classList.add("show"); wrapJa($("werror")); }
+  function wsubmit() {
+    if (wwaiting) return;
+    var nippo = $("nippo").value.trim();
+    if (!nippo) { $("nippo").focus(); return; }
+    $("werror").classList.remove("show");
+    if (sampleMode) {
+      if (wcid !== "A") { wError("見本で返せるのはA社長の日報だけです。Claudeを呼べる環境で開くと、B社長・C部長も返せます。"); return; }
+      wwaiting = true; $("wsend").disabled = true; $("wstatus").classList.remove("hidden");
+      setTimeout(function () {
+        wwaiting = false; $("wsend").disabled = false; $("wstatus").classList.add("hidden");
+        showReply(Core.normalizeReply(Core.clone(Core.SAMPLE_REPLY)));
+      }, 900);
+      return;
+    }
+    if (!ready) { wError("Claudeとつながる準備をしています。数秒待ってから、もう一度お試しください。"); return; }
+    var prompt = Core.buildReplyPrompt(wcid, sessions[wcid], nippo, vname(), recentClosings);
+    lastPrompt = prompt;
+    wwaiting = true; $("wsend").disabled = true; $("wstatus").classList.remove("hidden");
+    callAI(prompt, new AbortController().signal).then(function (raw) {
+      var rr = Core.normalizeReply(raw);
+      recentClosings.push(rr.closing_type);
+      showReply(rr);
+    }, function (e) {
+      if (e && e.code !== "cancelled") wError(errorText(e && e.code));
+    }).then(function () { wwaiting = false; $("wsend").disabled = false; $("wstatus").classList.add("hidden"); });
+  }
+  $("wsend").onclick = wsubmit;
+  $("wsample").onclick = function () {
+    var c = Core.CUSTOMERS[wcid];
+    $("nippo").value = Core.SAMPLE_NIPPO[wcid] || (c ? c.name + "を訪問。話は聞いてもらえたが、次の約束までは取れなかった。どう切り出せばよかったのか分からない。" : "");
+  };
+  $("nippo").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); wsubmit(); }
+  });
+
+  // タブ
+  function showTab(name) {
+    Array.prototype.forEach.call(document.querySelectorAll("nav.tabs button"), function (x) { x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === name)); });
+    ["kikidasu", "tameru", "watasu"].forEach(function (t) { $("tab-" + t).classList.toggle("hidden", t !== name); });
+    if (name === "tameru") renderTameru();
+    if (name === "watasu") renderWatasu();
+    window.scrollTo(0, 0);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("nav.tabs button"), function (b) {
+    b.onclick = function () { showTab(b.getAttribute("data-tab")); };
+  });
+
+  // 検証用の入口（画面の外から状態を見る・呼び出し先を差し替える）
+  window.TSUGITE = {
+    core: Core,
+    state: function () { return { currentId: currentId, sampleMode: sampleMode, sessions: sessions }; },
+    lastPrompt: function () { return lastPrompt; },
+    setBackend: function (fn) { backend = fn; ready = true; setSampleMode(false); },
+    showTab: function (t) { showTab(t); },
+    submit: submit
+  };
+
+  wrapJa(document.querySelector("header"));
+  wrapJa($("tab-kikidasu"));
+  wrapJa($("banner"));
+  wrapJa($("tab-tameru")); wrapJa($("tab-watasu"));
+  renderWatasu();
+  renderAll();
+})();
+</script>
+</body>
+</html>

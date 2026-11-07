@@ -1,0 +1,26 @@
+# 秘密の情報
+.env
+.env.*
+*.pem
+*.key
+*secret*
+*credential*
+*token*
+
+# 個人の設定・手元のファイル
+.claude/settings.local.json
+.claude/*.local.*
+*.local.*
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# 作業中の一時ファイル
+scratch/
+tmp/
+*.log
+node_modules/
