@@ -155,7 +155,7 @@
   }
   .question { font-size: 30px; font-weight: 800; line-height: 1.55; margin: 8px 0 6px; color: var(--ink); letter-spacing: .01em; }
   @media (max-width: 620px) { .question { font-size: 24px; } }
-  .reason { font-size: 14px; color: var(--sub); margin: 0 0 18px; padding-left: 10px; border-left: 3px solid var(--wood); }
+  .reason { font-size: 16px; color: var(--sub); margin: 0 0 18px; padding-left: 10px; border-left: 3px solid var(--wood); }
   .options { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
   .opt {
     border: 2px solid var(--navy); background: #fff; color: var(--navy); border-radius: 999px;
@@ -273,6 +273,109 @@
   .fuda.t-意識する一点 { color: #fff; background: var(--orange); border-color: var(--orange); }
   .used { font-size: 13px; color: var(--sub); }
   .hidden { display: none !important; }
+
+  /* ===== 11/8 仕上げ：録画で伝わる形に ===== */
+  .role { display: inline-block; font-size: 15px; font-weight: 800; color: var(--navy); background: #fff; border: 1.5px solid var(--navy); border-radius: 999px; padding: 2px 14px; white-space: nowrap; margin-right: 8px; }
+  .role.young { color: var(--green); border-color: var(--green); }
+  .roleline { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 14px; font-size: 16px; color: var(--sub); }
+  .samplepill { display: none; font-size: 13px; color: #fff; border: 1px solid rgba(255,255,255,.55); border-radius: 999px; padding: 1px 10px; white-space: nowrap; margin-left: 8px; }
+  .samplepill.show { display: inline-block; }
+  .banner.show { display: none; }
+  /* 選んだあとは、お客さまの列を1行にたたむ */
+  .picked-bar { display: none; align-items: center; gap: 10px 14px; flex-wrap: wrap; }
+  .setup.collapsed .picked-bar { display: flex; }
+  .setup.collapsed .setup-head, .setup.collapsed .cards { display: none; }
+  .setup.collapsed { padding: 10px 16px; margin-bottom: 14px; }
+  .picked-bar .who { font-family: var(--mincho); font-weight: 700; font-size: 22px; color: var(--navy); white-space: nowrap; }
+  .picked-bar .rec { font-size: 15px; color: var(--sub); }
+  /* 件数の帯 */
+  .counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 10px; }
+  .counts > div { border-radius: 12px; padding: 6px 10px; text-align: center; line-height: 1.2; }
+  .counts b { display: block; font-size: 34px; font-weight: 800; font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif; }
+  .counts b small { font-size: 14px; font-weight: 700; margin-left: 2px; }
+  .counts span { font-size: 14px; white-space: nowrap; font-weight: 700; }
+  .counts .c-a { background: var(--green-soft); color: var(--green); }
+  .counts .c-g { background: #fff; color: var(--navy); border: 2px dashed #9fb3c8; }
+  .counts .c-n { background: var(--orange-soft); color: var(--orange); }
+  .counts b.bump { animation: bump .5s ease-out; }
+  @keyframes bump { 40% { transform: scale(1.3); } }
+  .mk { font-size: 13px !important; }
+  .legend { font-size: 15px !important; }
+  .sec h3 .count { display: none; }
+  /* まだのこと：札にして横に並べる */
+  .sec.notyet ul { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sec.notyet li { margin: 0; padding: 5px 14px; font-size: 16px; white-space: nowrap; border-left: 0; border: 1.5px solid var(--orange); border-radius: 999px; }
+  .sec.notyet li.none { border: 0; }
+  .sec.answered li.more { background: transparent; border: 0; color: var(--sub); font-size: 15px; padding: 2px 4px; }
+  /* 推測：根拠と、確かめている最中 */
+  .basis { display: block; font-size: 14px; color: #5a6f86; margin-top: 2px; }
+  .sec.guesses li.asking { border: 3px dashed var(--navy); animation: ask 1.6s ease-in-out infinite; }
+  @keyframes ask { 50% { box-shadow: 0 0 0 6px rgba(31,78,121,.15); } }
+  .sec.guesses li.rejected { color: #9a9a9a; text-decoration: line-through; border-color: #ccc; }
+  /* 推測 → 本人の言葉に変わる */
+  .mk.conf { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
+  .sec.answered li.promoted.new { animation: promote 2.6s ease-out both; }
+  @keyframes promote {
+    0%   { background: #fff; border: 2px dashed #9fb3c8; border-left-width: 2px; color: #33475b; }
+    30%  { background: #fff; border: 2px dashed var(--navy); border-left-width: 2px; }
+    55%  { background: var(--green-soft); border: 2px solid var(--green); border-left-width: 5px; box-shadow: 0 0 0 5px rgba(46,139,87,.35), 0 0 36px 10px rgba(46,139,87,.45); }
+    100% { background: var(--green-soft); border: 0 solid var(--green); border-left-width: 5px; box-shadow: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sec.answered li.promoted.new { animation: none; } }
+  .fuda.t-承認 { color: var(--navy) !important; background: #fff !important; border-color: var(--navy) !important; }
+  /* ② 訪問前の1枚 */
+  .vcard { background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--navy); border-radius: 16px; padding: 18px 22px 20px; margin-bottom: 22px; }
+  .vhead { display: flex; align-items: baseline; gap: 6px 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .vhead h3 { margin: 0; font-size: 30px; color: var(--navy); white-space: nowrap; }
+  .vhead .rec { font-size: 15px; color: var(--sub); }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+  @media (max-width: 860px) { .three { grid-template-columns: 1fr; } }
+  .pt { border-radius: 14px; padding: 12px 16px 14px; background: var(--green-soft); border-top: 5px solid var(--green); }
+  .pt .ptl { font-size: 15px; font-weight: 800; color: var(--green); white-space: nowrap; }
+  .pt .ptb { font-size: 24px; font-weight: 800; line-height: 1.45; margin: 4px 0 6px; color: var(--ink); }
+  .pt .ptq { font-size: 17px; color: #2c5d41; }
+  .pt.empty { background: #fff; border: 2px dashed var(--orange); border-top-width: 5px; border-top-style: solid; }
+  .pt.empty .ptl { color: var(--orange); }
+  .pt.empty .ptb { font-size: 20px; color: var(--orange); }
+  .vstory { margin: 18px 0 0; padding: 10px 16px; border-left: 6px solid var(--green); background: #fff; border-radius: 0 12px 12px 0; font-size: 19px; }
+  .vstory .lbl { font-size: 14px; font-weight: 800; color: var(--green); display: block; }
+  .vcols { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; margin-top: 18px; }
+  @media (max-width: 860px) { .vcols { grid-template-columns: 1fr; } }
+  .vcols h4 { margin: 0 0 6px; font-size: 17px; white-space: nowrap; }
+  .vcols h4.g { color: var(--green); } .vcols h4.n { color: var(--orange); } .vcols h4.p { color: var(--navy); }
+  .vcols ul { list-style: none; margin: 0; padding: 0; }
+  .vcols li { font-size: 16px; padding: 4px 0 4px 12px; border-left: 3px solid var(--green); margin: 4px 0; }
+  .vcols li.gs { border-left: 3px dashed #9fb3c8; color: #33475b; }
+  .tagrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .tagrow span { font-size: 15px; padding: 3px 12px; border: 1.5px solid var(--orange); border-radius: 999px; background: var(--orange-soft); white-space: nowrap; }
+  /* ③ 先輩の言葉が届いた */
+  .story q { quotes: "「" "」"; text-decoration: underline 3px rgba(46,139,87,.45); text-underline-offset: 5px; font-weight: 700; }
+  .arrived { margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: var(--green-soft); border-left: 5px solid var(--green); font-size: 16px; }
+  .arrived b { color: var(--green); }
+  .guard { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -6px 0 14px; }
+  .guard .glabel { font-size: 13px; font-weight: 800; color: var(--sub); white-space: nowrap; }
+  .guard .gchip { font-size: 14px; color: #1d5c3a; background: #fff; border: 1.5px solid var(--green); border-radius: 8px; padding: 1px 10px; white-space: nowrap; }
+  .evalbox { margin-top: 26px; }
+  .evalbox summary { cursor: pointer; font-family: var(--mincho); font-weight: 700; font-size: 19px; color: var(--navy); }
+  .evalgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 14px 0 10px; }
+  @media (max-width: 860px) { .evalgrid { grid-template-columns: 1fr; } }
+  .evalgrid h4 { margin: 0 0 6px; font-size: 17px; color: var(--navy); white-space: nowrap; }
+  .evalgrid p { margin: 4px 0; font-size: 16px; }
+  .evalgrid p b { font-size: 24px; color: var(--green); white-space: nowrap; }
+  .evalgrid p b small { font-size: 13px; color: var(--sub); margin: 0 2px; }
+  .evalgrid p.before { color: var(--sub); text-decoration: none; }
+  .evalgrid p.before b { color: var(--orange); }
+  .junior { margin-top: 18px; padding: 14px 16px; border: 2px solid var(--green); border-radius: 14px; background: #fff; }
+  .jhead { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
+  .jsub { font-size: 15px; color: var(--sub); }
+  .jlist { margin: 6px 0 10px; padding-left: 1.6em; }
+  .jlist li { font-size: 19px; font-weight: 700; margin: 6px 0; }
+  .jlist .jwhy { display: block; font-size: 14px; font-weight: 400; color: var(--sub); }
+  .jnote { font-size: 14px; color: var(--green); font-weight: 700; margin-top: 6px; }
+  .jbtn { font-size: 17px; padding: 8px 18px; border: 2px solid var(--green); color: var(--green); font-weight: 800; }
+  .evalgrid p { white-space: normal; }
+  .evalgrid p b { display: inline-block; }
+  .sec.notyet li, .tagrow span { white-space: normal; }
 </style>
 </head>
 <body>
@@ -285,12 +388,12 @@
       <path d="M6 12 H19 M6 18 H20 M6 24 H18 M37 12 H48 M38 18 H48 M37 24 H48" stroke="rgba(120,80,30,.28)" stroke-width="1"/>
     </svg>
     <h1>継ぎ手</h1><span class="en">TSUGITE</span>
-    <span class="tag">ベテランの営業ノウハウを、若手へ</span>
+    <span class="tag">ベテランの営業ノウハウを、若手へ<span id="samplepill" class="samplepill">見本の流れ</span></span>
   </div>
   <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す<small class="tsub">ベテランに聞く</small></button>
-    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める<small class="tsub">引き継ぎカードにまとめる</small></button>
-    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">若手が実践して振り返る</small></button>
+    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す<small class="tsub">話す人：ベテラン</small></button>
+    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める<small class="tsub">読む人：後任の若手</small></button>
+    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">書く人：後任の若手</small></button>
   </nav>
 </header>
 
@@ -299,7 +402,9 @@
 
   <!-- タブ① 聞き出す -->
   <section id="tab-kikidasu" role="tabpanel">
-    <div class="panel setup">
+    <div class="roleline"><span class="role">話す人：ベテラン（来春退職）</span>ベテランと後任の若手が、一緒に見る画面です。問いは若手が読み上げても使えます。</div>
+    <div class="panel setup" id="setup">
+      <div class="picked-bar"><span class="who" id="pbWho"></span><span class="rec" id="pbRec"></span><button id="pbChange" class="ghost" type="button">お客さまを切り替える</button></div>
       <div class="setup-head">
         <h2>お客さまを1人選ぶ</h2>
       </div>
@@ -334,6 +439,7 @@
             <div id="ack" class="ack hidden"></div>
             <div id="question" class="question"></div>
             <div id="reason" class="reason hidden"></div>
+            <div id="guard" class="guard hidden"></div>
             <div id="options" class="options"></div>
             <div id="answerBox" class="answer-box">
               <textarea id="answer" placeholder="文字で書くか、話して入れてください。選択肢を押すと、ここに入ります。ひと言足すと、引き継ぎが濃くなります。"></textarea>
@@ -365,32 +471,30 @@
 
       <aside class="panel board" id="board" aria-live="polite">
         <h2>仕分けボード <span class="upd" id="upd">まだ更新なし</span></h2>
+        <div class="counts"><div class="c-a"><b id="nA">0<small>件</small></b><span>答えてもらえた</span></div><div class="c-g"><b id="nG">0<small>件</small></b><span>AIの推測</span></div><div class="c-n"><b id="nN">0<small>件</small></b><span>まだのこと</span></div></div>
         <div class="legend">
-          <span><span class="mk self">本人の言葉</span>ベテランが言ったこと</span>
-          <span><span class="mk guess">AIの推測</span>まだ確かめていない</span>
-          <span><span class="mk new">今回</span>いま増えた</span>
+          <span><span class="mk self">本人の言葉</span>ベテランが言った</span>
+          <span><span class="mk guess">AIの推測</span>行間を読んだ・確かめる前</span>
         </div>
+        <div class="sec guesses"><h3>AIの推測（行間を読む） <span class="count" id="cGuesses">0</span></h3><ul id="bGuesses"></ul></div>
         <div class="sec answered"><h3>答えてもらえたこと <span class="count" id="cAnswered">0</span></h3><ul id="bAnswered"></ul></div>
-        <div class="sec guesses"><h3>AIの推測 <span class="count" id="cGuesses">0</span></h3><ul id="bGuesses"></ul></div>
         <div class="sec notyet"><h3>まだのこと <span class="count" id="cNotyet">0</span></h3><ul id="bNotyet"></ul></div>
       </aside>
     </div>
   </section>
 
   <section id="tab-tameru" role="tabpanel" class="hidden">
-    <div class="panel tameru-head">
-      <h2>引き継ぎカード</h2>
-      <div class="muted">①でベテランが答えた内容が、お客さまごとの「引き継ぎカード」になります。後任の若手は、訪問の前にこのカードを読みます。カードは4つに分けています――「なぜ」（大切にしていること）、「案件の記憶」（関係が深まったきっかけ）、「具体」（会える曜日や話の入り方）、「誰が行けば」（話が通る人）。お試し版のため保存はしません（ページを閉じると消えます）。</div>
-    </div>
+    <div class="roleline"><span class="role young">読む人：後任の若手</span>訪問の前に、この1枚を読みます。（お試し版のため保存はしません）</div>
     <div id="hcards" class="hcards"></div>
   </section>
 
   <section id="tab-watasu" role="tabpanel" class="hidden">
     <div class="layout">
       <div>
+        <div class="roleline"><span class="role young">書く人：後任の若手</span>訪問して日報を書くと、先輩の言葉で返ってきます。</div>
         <div class="panel">
           <h2>若手の日報に返す</h2>
-          <div class="muted">若手が訪問してみて、日報を書く。継ぎ手は答えを渡しきらず、引き継ぎカードにある「先輩の物語」で返します。締めは「問い」「承認・励まし」「意識する一点」のどれか。やってみる → 振り返る → 次の一歩、を回していきます。</div>
+          <div class="muted">答えは渡しきりません。締めは「問い」「励まし」「意識する一点」のどれかです。</div>
           <div class="chips" id="wchips"></div>
           <label class="field-label" for="nippo">若手の日報</label>
           <textarea id="nippo" class="nippo" placeholder="今日の訪問で起きたこと、困ったことを書いてください"></textarea>
@@ -415,6 +519,26 @@
       </aside>
     </div>
   </section>
+  <details class="panel evalbox" id="evalbox">
+    <summary>この画面の検証（33件）　直す前 → 直した後</summary>
+    <div class="evalgrid">
+      <div><h4>① 聞き出す 10件</h4>
+        <p>本人が言っていないことを本人の言葉にした仕分け<br><b>0<small>件</small></b></p>
+        <p>抽象的な答えに噛み砕く問い<br><b>2<small>件中</small>2</b></p>
+        <p>行間の推測が、本人の言葉を根拠に出た<br><b>10<small>件中</small>10</b></p></div>
+      <div><h4>① 崩した答え 7件</h4>
+        <p class="before">直すのに使った3件・直す前（又聞きを本人の言葉にした）<br><b>3<small>件中</small>2</b></p>
+        <p>同じ3件・直した後<br><b>3<small>件中</small>3</b></p>
+        <p>初見の4件（直した後に初めて流した。Claudeが作成）<br><b>4<small>件中</small>4</b></p></div>
+      <div><h4>② 若手の目で読む 6問</h4>
+        <p>はい・いいえか選べる形で、理由つき<br><b>6<small>問中</small>6</b></p>
+        <p>カードで空いていた「どう話に入るか」を、若手が自分から質問にした</p></div>
+      <div><h4>③ 渡す 日報10件</h4>
+        <p class="before">直す前：締めが「問い」に偏る<br><b>10<small>件中</small>9</b></p>
+        <p>直した後：問い2・励まし3・意識する一点5<br>先輩の言葉を作った返信 <b>0<small>件</small></b></p></div>
+    </div>
+    <div class="muted">応答はClaude、採点はこのページと同じ処理に通して自動で数えています。聞き出す10件の正解は、作り手がベテランの目で確認済み（11/7）。崩した答えと初見の正解はClaudeの案です。結果の表は GitHub の evals/ にあります。</div>
+  </details>
 </main>
 
 <!-- ここから下は画面に依存しない部分（指示文の組み立て・応答の整え方）。検証でもこのまま使う -->
@@ -437,6 +561,7 @@ var TsugiteCore = (function () {
     "6. 主語は相手。敬語で、短く（問いは60字以内）。責めない。できていないことより、次の一つを聞く。",
     "7. 本人が言っていないことを「答えてもらえたこと」に入れない。推測は必ず「AIの推測」として分ける。",
     "8. 実在の会社名・人名は使わない。",
+    "9. 又聞き（「〜らしい」「〜って言ってた」「〜と聞いた」など、本人が自分で確かめていないこと）は、本人の言葉にしない。AIの推測にするか、まだのことに「（内容）を本人に確かめる」と入れる。",
     "",
     "### 問いの4層（どこを聞いているかを毎回付ける）",
     "- 根：なぜそうしているのか（大切にしていること）",
@@ -456,8 +581,11 @@ var TsugiteCore = (function () {
     '    "answered": [{"text": "答えてもらえたこと（短く）", "source": "本人の言葉 | AIの推測", "quote": "本人の言葉のときは原文をそのまま"}],',
     '    "notyet": ["まだ聞けていないこと（短く）"]',
     "  },",
-    '  "board_remove_notyet": ["今回の答えで埋まった『まだのこと』"]',
+    '  "board_remove_notyet": ["今回の答えで埋まった『まだのこと』"],',
+    '  "guess": {"text": "行間を読んだ推測（40字以内。「〜かもしれない」で終える）", "basis": "根拠にした本人の言葉（これまでの答えの原文どおり）"},',
+    '  "confirm_guess": "ボードの推測を確かめる問いのときだけ、その推測の文言をそのまま。ほかは空文字"',
     "}",
+    "- guess（行間を読む推測）：毎回1件立てる。本人の言葉から一歩だけ先を読み、お客さまの気持ち・理由・人柄について考える。主張は1つだけ（「AやB」のように2つを混ぜない。確かめたときに一部だけ当たるのを防ぐ）。言い切らず「〜かもしれない」で終える。根拠（basis）は必ず本人が言った言葉の原文。根拠が無ければ空にする。",
     "- type が「確かめる」のときは options を [\"はい\", \"いいえ\", \"少し違う\"] にする。",
     "- 「最後のひと押し」のときだけ options を空にする。",
     "- 承認した回は、画面に札「承認」も表示する（acknowledgement が空でなければ表示）。"
@@ -487,7 +615,7 @@ var TsugiteCore = (function () {
       first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
                reason: "記録の「月2回を18年」から、会い方に決まりがあると読んで確かめます",
                question: "A社長とは、訪問の曜日や時間帯がだいたい決まっている印象です。合っていますか？" },
-      firstGuess: "訪問の曜日・時間帯がだいたい決まっている（月2回の訪問が18年続いているため）"
+      firstGuess: { text: "訪問の曜日・時間帯がだいたい決まっているかもしれない", basis: "記録：月2回の訪問が18年ほぼ途切れず" }
     },
     B: {
       id: "B", name: "B社長", company: "B社（架空）",
@@ -495,7 +623,7 @@ var TsugiteCore = (function () {
       first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
                reason: "記録の「訪問が平均90分」から、雑談の時間が長いと読んで確かめます",
                question: "B社長とは訪問が長めなので、本題の前に雑談の時間をとっている印象です。合っていますか？" },
-      firstGuess: "本題の前に雑談の時間をとっている（訪問が平均90分と長いため）"
+      firstGuess: { text: "本題の前に雑談の時間をとっているかもしれない", basis: "記録：1回の訪問が平均90分" }
     },
     C: {
       id: "C", name: "C部長", company: "C社（架空）",
@@ -503,7 +631,7 @@ var TsugiteCore = (function () {
       first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
                reason: "記録の「やりとりの8割がメール」から、書面を好むと読んで確かめます",
                question: "C部長とは、訪問より先にメールで要点を送るほうが話が進む印象です。合っていますか？" },
-      firstGuess: "訪問より先にメールで要点を送るほうが話が進む（やりとりの8割がメールのため）"
+      firstGuess: { text: "訪問より先にメールで要点を送るほうが話が進むかもしれない", basis: "記録：やりとりの8割がメール" }
     }
   };
   function recordText(c) { return c.name + "（" + c.company + "）：" + c.records.join("／"); }
@@ -522,11 +650,12 @@ var TsugiteCore = (function () {
     return {
       customer: cid,
       turns: [],                    // {q:{...}, a:"..."}
-      current: c.first ? clone(c.first) : null,   // いま画面に出ている問い（自分のお客さまは、AIの最初の問いが来てから入る）
+      current: c.first ? Object.assign(clone(c.first), c.firstGuess ? { confirmGuess: c.firstGuess.text } : {}) : null,   // いま画面に出ている問い（自分のお客さまは、AIの最初の問いが来てから入る）
       qNo: 1,                       // いまの問いが何問目か
       plusUsed: false,              // 「プラスα」の問いを使ったか（1回のインタビューで1回だけ）
       sinceAck: 0,                  // 前回の承認から、承認なしの問いがいくつ続いたか（1問目の仮説は数えない）
-      board: { answered: [], guesses: c.firstGuess ? [{ text: c.firstGuess, isNew: false }] : [], notyet: START_NOTYET.slice() },
+      sinceConfirm: 0,              // 推測を確かめてから、何問たったか
+      board: { answered: [], guesses: c.firstGuess ? [{ text: c.firstGuess.text, basis: c.firstGuess.basis, isNew: false }] : [], notyet: START_NOTYET.slice() },
       updates: 0,
       done: false
     };
@@ -552,6 +681,24 @@ var TsugiteCore = (function () {
   // 「プラスα」の問いへの答えか。思いつかなかったか
   function plusFollow(s) { return !!(s.current && s.current.type === "プラスα"); }
   function plusNoIdea(answer) { return /^すぐには思いつかない|思いつかない|特にない|わからない|分からない/.test(String(answer || "").trim()); }
+
+  // 又聞き（〜らしい・〜って言ってた）。「素晴らしい」「〜らしさ」などは又聞きではないので先に外す
+  var NOT_HEARSAY = /すばらしい|素晴らしい|かわいらしい|可愛らしい|男らしい|女らしい|子どもらしい|子供らしい|人間らしい|自分らしい|わざとらしい|もっともらしい|らしさ/g;
+  var HEARSAY = /らしい|って言って(た|る)|と言って(い)?た|と聞いた|って聞いた|聞いた話|そうだけど|だそうで/;
+  function isHearsay(t) { return HEARSAY.test(String(t || "").replace(NOT_HEARSAY, "")); }
+
+  // 推測を確かめた答えの判定。否定を先に見る（「そうじゃない」を「そう」で拾わない）
+  function confirmVerdict(answer) {
+    var a = String(answer || "").trim();
+    if (/^(少し違う|ちょっと違う|半分|一部)/.test(a)) return "partly";
+    if (/^(いいえ|いえ|いや|違|ちが|そうじゃな|そうではな|そうでもな|そんなことな|うんにゃ|ううん|全然)/.test(a)) return "no";
+    if (/^(はい|そうそう|そう|うん|ええ|合って|その通り|そのとおり|まさに|確かに|だね)/.test(a)) {
+      // 「そうそう、でも〜」「はい、ただ〜」は一部だけ当たり
+      if (/^.{0,12}?(でも|ただ|けど|けれど|とはいえ|ちょっと違|少し違|関係ない)/.test(a)) return "partly";
+      return "yes";
+    }
+    return "unclear";
+  }
 
   function ackRule(s, answer) {
     if (plusFollow(s) && !plusNoIdea(answer)) return { allow: true, text: "前の「プラスα」の問いに、本人が自分で考えを足してくれました。具体的な行動として良い考えなら、承認を入れる（前回の承認からの回数にかかわらず）。具体的な行動でなければ空文字。" };
@@ -606,6 +753,13 @@ var TsugiteCore = (function () {
         cond.push("- ページの目安：前の「プラスα」の問いに、本人が考えを足してくれました。足してくれた言葉は本人の言葉として answered に入れる。");
       }
       if (looksAbstract(answer)) cond.push("- ページの目安：今回の答えは抽象的な言葉だけに見えます。具体的な行動が入っていなければ、type「噛み砕く」で聞いてください。");
+      s.pendingConfirm = "";
+      var afterConfirm = s.current.confirmGuess ? 0 : s.sinceConfirm + 1;
+      var cands = s.board.guesses.filter(function (g) { return !(s.current.confirmGuess && similar(g.text, s.current.confirmGuess)); });
+      if (!s.expectPlus && !looksAbstract(answer) && afterConfirm >= 2 && cands.length) {
+        s.pendingConfirm = cands[cands.length - 1].text;
+        cond.push("- ページの目安：今回は、行間を読んだ推測を本人に確かめる回です。ボードの推測「" + s.pendingConfirm + "」を、type「確かめる」で「〜という印象です。合っていますか？」の形（60字以内・言い切らずに）で聞き、confirm_guess にその推測の文言をそのまま入れる。reason は「行間を読んだ推測を、本人に確かめます」。");
+      }
       if (!s.expectPlus) cond.push("- 選択肢は「ありそうな仮説」を3つと、最後に「他にありますか？」。type「確かめる」なら [\"はい\", \"いいえ\", \"少し違う\"]。");
       cond.push("- 若手に伝えたいこと（同行・初回の訪問・引き継ぎ）を聞くときは、「見せたい場面」ではなく「若手に学んでほしい関わり方や工夫は、どれに近いですか？」のように、関わり方・工夫を聞く。");
       cond.push("- 問いの文は「〜ですか？」「どれに近いですか？」のように、はい・いいえか選択肢で答えられる形で終える。「どんな」「何を」「どう」「どうやって」「どのように」で聞かない。");
@@ -613,13 +767,15 @@ var TsugiteCore = (function () {
     }
     cond.push("- ベテランの呼び名：" + (veteranName ? veteranName + "さん（承認の△△に使う）" : "未入力（承認では名前を入れず「〇〇を大切にされてきたからこそ、…」の形にする）"));
     cond.push("- まだのことが埋まったら board_remove_notyet に、今のボードにある文言のまま入れる。");
-    cond.push("- 今のボードの「AIの推測」を本人が確かめた・否定したときは、board_remove_guesses（配列）に、その文言のまま入れる。");
+    if (s.current.confirmGuess) cond.push("- 今回の答えは、推測「" + s.current.confirmGuess + "」を確かめた答えです。はい・いいえの判定と、推測を本人の言葉に移すのはページが行うので、その推測と同じ内容を answered に重ねて入れない。本人が言い直したり足したりした言葉があれば、それは answered に入れる。");
+    cond.push("- 今のボードの「AIの推測」を本人が否定したときは、board_remove_guesses（配列）に、その文言のまま入れる。");
+    cond.push("- guess は毎回1件。今のボードの推測や答えてもらえたことと同じ内容は立てない。根拠は本人の答えの原文から短く引く。");
     cond.push("- 今回の答えで本人が言っていないことは、source を「AIの推測」にする。すでにボードにある内容は重ねて入れない。");
     cond.push("- 抽象的な言葉だけの答え（「誠意」「タイミング」など、具体的な行動がないもの）は answered に入れない。代わりに notyet に「『誠意』を具体的な行動にすると」のように足す。");
 
     var board = {
       answered: s.board.answered.map(function (x) { return { text: x.text, quote: x.quote }; }),
-      guesses: s.board.guesses.map(function (x) { return x.text; }),
+      guesses: s.board.guesses.map(function (x) { return x.text + (x.basis ? "（根拠：" + x.basis + "）" : ""); }),
       notyet: s.board.notyet.slice()
     };
 
@@ -703,7 +859,19 @@ var TsugiteCore = (function () {
     var notyetAdd = Array.isArray(add.notyet) ? add.notyet.map(str).filter(Boolean) : [];
     var removeNotyet = Array.isArray(r.board_remove_notyet) ? r.board_remove_notyet.map(str).filter(Boolean) : [];
     var removeGuesses = Array.isArray(r.board_remove_guesses) ? r.board_remove_guesses.map(str).filter(Boolean) : [];
-    return { q: q, answered: answered, notyetAdd: notyetAdd, removeNotyet: removeNotyet, removeGuesses: removeGuesses, notes: notes };
+    // 行間を読む推測（毎回1件）と、推測を確かめる問い
+    var gRaw = r.guess && typeof r.guess === "object" ? r.guess : {};
+    var guess = { text: str(gRaw.text), basis: str(gRaw.basis) };
+    if (guess.text && guess.text.length > 60) guess.text = guess.text.slice(0, 60);
+    if (!guess.text && ph !== "closing") notes.push("推測が空");
+    var cg = str(r.confirm_guess);
+    if (ph === "normal" && q.type === "確かめる" && (cg || s.pendingConfirm)) {
+      var pool = s.board.guesses.map(function (g) { return g.text; }).concat(guess.text ? [guess.text] : []);
+      var hit = pool.filter(function (t) { return cg && similar(t, cg); })[0] || (s.pendingConfirm && (!cg || similar(cg, s.pendingConfirm)) ? s.pendingConfirm : "");
+      if (hit) q.confirmGuess = hit;
+    }
+    if (s.pendingConfirm && !q.confirmGuess) notes.push("推測を確かめる回だったが、確かめなかった");
+    return { q: q, answered: answered, notyetAdd: notyetAdd, removeNotyet: removeNotyet, removeGuesses: removeGuesses, guess: guess, notes: notes };
   }
 
   // 答え＋整えた返事で、セッションを1歩進める
@@ -715,6 +883,31 @@ var TsugiteCore = (function () {
     n.removeGuesses.forEach(function (r) {
       s.board.guesses = s.board.guesses.filter(function (g) { return !similar(g.text, r); });
     });
+    // 推測を確かめた答え：はい→本人の言葉へ移す／いいえ・少し違う→推測を外す
+    var cgText = s.current && s.current.confirmGuess;
+    if (cgText) {
+      var verdict = confirmVerdict(answer);
+      var g = s.board.guesses.filter(function (x) { return similar(x.text, cgText); })[0];
+      if (verdict !== "unclear") s.board.guesses = s.board.guesses.filter(function (x) { return !similar(x.text, cgText); });
+      if (verdict === "unclear") {
+        n.notes.push("確かめの答えが、はい・いいえで読めない→推測は残す：" + cgText);
+      } else if (verdict === "yes") {
+        var a1 = String(answer).trim();
+        // 引用は確かめの言葉（「そうそう」など）だけにする。続きの話は、AIの仕分けで別の項目になる
+        var conf = (a1.match(/^[^、。,！!？?\s]{1,10}/) || [a1.slice(0, 10)])[0];
+        var promotedItem = ({
+          text: String(g ? g.text : cgText).replace(/(の)?かもしれない。?$/, "").replace(/(、|。)$/, ""),
+          quote: "",
+          confirmedBy: conf,
+          basis: g ? g.basis : "",
+          layer: s.current.layer, isNew: true, promoted: true
+        });
+        n.notes.push("推測→本人が確認：" + cgText);
+      } else {
+        s.board.rejected = (s.board.rejected || []).concat([{ text: cgText, isNew: true }]);
+        n.notes.push("推測が外れた：" + cgText);
+      }
+    }
     n.answered.forEach(function (it) {
       if (!it || typeof it !== "object") return;
       var text = str(it.text); if (!text) return;
@@ -725,6 +918,8 @@ var TsugiteCore = (function () {
         var allA = s.turns.map(function (t) { return t.a; }).concat([answer]).join("");
         if (norm(allA).indexOf(norm(quote)) < 0) { n.notes.push("引用が答えに無い→推測へ：" + quote); self = false; }
       }
+      // 又聞き（〜らしい・〜って言ってた）は、本人の言葉にしない
+      if (self && isHearsay(quote + " " + text)) { n.notes.push("又聞き→本人の言葉にしない：" + quote); self = false; }
       if (self) {
         if (s.board.answered.some(function (x) { return similar(x.text, text); })) return;
         s.board.answered.push({ text: text, quote: quote, layer: s.current.layer, isNew: true });
@@ -734,6 +929,7 @@ var TsugiteCore = (function () {
         s.board.guesses.push({ text: text, isNew: true });
       }
     });
+    if (typeof promotedItem !== "undefined" && promotedItem) s.board.answered.push(promotedItem);  // 確かめた推測は、いちばん新しい項目として上に出す
     n.removeNotyet.forEach(function (r) {
       s.board.notyet = s.board.notyet.filter(function (x) { return !similar(x, r); });
     });
@@ -743,6 +939,12 @@ var TsugiteCore = (function () {
       s.board.notyet.push(t); newNotyet.push(t);
     });
     s.board.newNotyet = newNotyet;
+    if (n.guess && n.guess.text) {
+      var dupG = s.board.guesses.some(function (x) { return similar(x.text, n.guess.text); }) ||
+                 s.board.answered.some(function (x) { return similar(x.text, n.guess.text.replace(/(の)?かもしれない。?$/, "")); });
+      if (!dupG) s.board.guesses.push({ text: n.guess.text, basis: n.guess.basis, isNew: true });
+    }
+    (s.board.rejected || []).forEach(function (x) { if (!cgText || !similar(x.text, cgText)) x.isNew = false; });
 
     s.turns.push({ q: s.current, a: answer, notes: n.notes });
     s.updates += 1;
@@ -753,6 +955,7 @@ var TsugiteCore = (function () {
       s.current = n.q;
       s.qNo += 1;
       s.sinceAck = n.q.acknowledgement ? 0 : s.sinceAck + 1;
+      s.sinceConfirm = n.q.confirmGuess ? 0 : s.sinceConfirm + 1;
       if (n.q.type === "プラスα") s.plusUsed = true;
     }
     return s;
@@ -763,12 +966,12 @@ var TsugiteCore = (function () {
     answers: [
       "そうそう、金曜の午前は必ず会社にいるんだよ。月曜は朝礼で忙しいから避けてる",
       "創業記念日に、手書きのカードを持って行ったのが始まりかな",
-      "社長が大事にしてるのは社員さんなんだよ。だから俺も、受付の人の名前は全部覚えてる"
+      "そうそう。それと、社長が大事にしてるのは社員さんなんだよ。だから俺も、受付の人の名前は全部覚えてる"
     ],
     replies: [
       {
         type: "選ぶ", acknowledgement: "", layer: "幹",
-        reason: "会い方は聞けたので、関係が深まったきっかけ（幹）に進みます",
+        reason: "会い方は聞けたので、関係が深まったきっかけに進みます",
         question: "A社長との関係が深まったきっかけは、どれに近いですか？",
         options: ["会社の記念日や節目", "困りごとを一緒に片づけた", "人からの紹介", "他にありますか？"],
         board_add: {
@@ -779,25 +982,26 @@ var TsugiteCore = (function () {
           notyet: []
         },
         board_remove_notyet: ["会える曜日・時間帯"],
-        board_remove_guesses: ["訪問の曜日・時間帯がだいたい決まっている（月2回の訪問が18年続いているため）"]
+        guess: { text: "A社長は、週の仕事が片づいた時間に、ゆっくり話したい方かもしれない", basis: "金曜の午前は必ず会社にいるんだよ" }
       },
       {
-        type: "選ぶ", acknowledgement: "", layer: "葉",
-        reason: "きっかけの出来事を、若手が真似できる具体（葉）まで下ろします",
-        question: "その手書きのカードに書かれたのは、どれに近いことですか？",
-        options: ["創業からの歩みへのお祝い", "社員さんへのねぎらい", "これからもよろしくの一言", "他にありますか？"],
+        type: "確かめる", acknowledgement: "", layer: "根",
+        reason: "行間を読んだ推測を、本人に確かめます",
+        question: "A社長は、会社の節目を覚えていてくれる人を信頼される方という印象です。合っていますか？",
+        options: ["はい", "いいえ", "少し違う"],
+        confirm_guess: "A社長は、会社の節目を覚えていてくれる人を信頼される方かもしれない",
         board_add: {
           answered: [
-            { text: "創業記念日に手書きのカードを持参したのが関係の始まり", source: "本人の言葉", quote: "創業記念日に、手書きのカードを持って行ったのが始まりかな" },
-            { text: "会社の節目を覚えていることが、信頼につながった", source: "AIの推測", quote: "" }
+            { text: "創業記念日に手書きのカードを持参したのが関係の始まり", source: "本人の言葉", quote: "創業記念日に、手書きのカードを持って行ったのが始まりかな" }
           ],
           notyet: []
         },
-        board_remove_notyet: ["関係が深まったきっかけ"]
+        board_remove_notyet: ["関係が深まったきっかけ"],
+        guess: { text: "A社長は、会社の節目を覚えていてくれる人を信頼される方かもしれない", basis: "創業記念日に、手書きのカードを持って行ったのが始まりかな" }
       },
       {
         type: "選ぶ", layer: "根",
-        reason: "社員さんを大切にする考え方が出たので、その理由（根）を確かめます",
+        reason: "社員さんを大切にする考え方が出たので、その理由を確かめます",
         acknowledgement: "社長が大切にする社員さんを、受付の方の名前まで覚えて大切にされてきた{name}からこそ、A社長からの信頼も厚かったのですね。",
         question: "受付の方の名前を覚えるのは、どれに近い思いからですか？",
         options: ["社長の大切なものを大切にしたい", "会社ぐるみで付き合いたい", "若いころに教わった習慣", "他にありますか？"],
@@ -808,7 +1012,8 @@ var TsugiteCore = (function () {
           ],
           notyet: ["若手が受付の方と関係をつくる一歩目"]
         },
-        board_remove_notyet: ["具体的な気遣い", "大切にしていること（なぜそうするか）"]
+        board_remove_notyet: ["具体的な気遣い", "大切にしていること（なぜそうするか）"],
+        guess: { text: "受付の方との信頼が、A社長への近道になっているのかもしれない", basis: "受付の人の名前は全部覚えてる" }
       }
     ]
   };
@@ -969,7 +1174,37 @@ var TsugiteCore = (function () {
     used_quotes: ["月曜は朝礼で忙しいから避けてる", "金曜の午前は必ず会社にいるんだよ", "社長が大事にしてるのは社員さんなんだよ", "受付の人の名前は全部覚えてる"]
   };
 
+  // ---------- ② 若手の目で読む（2人目の役割：後任の若手） ----------
+  var JUNIOR_INSTRUCTION = [
+    "あなたは、地方の中小メーカー「みなと精工」（架空）に入って2年目の営業です。来春退職するベテランから、お客さまを引き継ぎます。",
+    "下の「引き継ぎカード」を、訪問の前に読みました。このカードだけで初めて訪問すると想像して、困りそうなことを、ベテランに聞きたい質問にしてください。",
+    "",
+    "### 守ること",
+    "1. 質問は3つ。カードに書いてあること（曜日・時間、すでに分かっている気遣いなど）は聞き直さない。カードの「まだ聞けていないこと」や、このお客さまの記録にある固有の事柄から聞く。",
+    "   「前任と一緒に行けますか」のような、どのお客さまにも当てはまる質問は入れない。",
+    "2. ベテランが答えやすいよう、はい・いいえか、選べる形で聞く（「どんな」「どう」「何を」で聞かない）。1問40字以内。",
+    "3. 各質問に、なぜそれが要るか（why）を、若手の言葉で25字以内。",
+    "4. 実在の会社名・人名は使わない。カードに無い事実を作らない。",
+    "",
+    "### 返す形（JSONだけ）",
+    '{"questions": [{"q": "質問", "why": "なぜ要るか"}]}'
+  ].join("\n");
+  function buildJuniorPrompt(cid, s) {
+    return [JUNIOR_INSTRUCTION, "", "## お客さまの記録", recordText(CUSTOMERS[cid]), "", "## 引き継ぎカード", handoffText(s), "", "JSONだけを返してください。"].join("\n");
+  }
+  function normalizeJunior(raw) {
+    var r = raw && typeof raw === "object" ? raw : {};
+    var qs = Array.isArray(r.questions) ? r.questions : [];
+    return qs.map(function (x) { return { q: str(x && x.q), why: str(x && x.why) }; }).filter(function (x) { return x.q; }).slice(0, 3);
+  }
+  var SAMPLE_JUNIOR = [
+    { q: "A社長との話は、雑談からと本題からのどちらで入りますか？", why: "最初のひと言で迷いそう" },
+    { q: "受付の方には、まず名刺とひと言のごあいさつでよいですか？", why: "名前を覚える一歩目が分からない" },
+    { q: "創業記念日は、来年も手書きのカードを続けたほうがよいですか？", why: "前任と違うと思われたくない" }
+  ];
+
   return {
+    buildJuniorPrompt: buildJuniorPrompt, normalizeJunior: normalizeJunior, SAMPLE_JUNIOR: SAMPLE_JUNIOR, JUNIOR_INSTRUCTION: JUNIOR_INSTRUCTION,
     LAYER_ORDER: LAYER_ORDER, SAMPLE_NIPPO: SAMPLE_NIPPO, SAMPLE_REPLY: SAMPLE_REPLY, REPLY_INSTRUCTION: REPLY_INSTRUCTION,
     buildReplyPrompt: buildReplyPrompt, setCustom: setCustom, buildFirstPrompt: buildFirstPrompt, startCustom: startCustom, normalizeReply: normalizeReply, handoffText: handoffText, recordText: recordText,
     INSTRUCTION: INSTRUCTION, CUSTOMERS: CUSTOMERS, SAMPLE: SAMPLE, FINAL_QUESTION: FINAL_QUESTION,
@@ -1047,6 +1282,7 @@ var TsugiteCore = (function () {
   function setSampleMode(on) {
     sampleMode = on;
     $("banner").classList.toggle("show", on);
+    $("samplepill").classList.toggle("show", on);
   }
   if (window.claude && typeof window.claude.use === "function") {
     window.claude.use("sample").then(function (fn) {
@@ -1090,7 +1326,16 @@ var TsugiteCore = (function () {
     add.onclick = function () { openCustom(); };
     box.appendChild(add);
     wrapJa(box);
+    var cur = currentId && Core.CUSTOMERS[currentId];
+    $("setup").classList.toggle("collapsed", !!cur && !expandCards);
+    if (cur) {
+      $("pbWho").textContent = cur.name;
+      $("pbRec").textContent = "記録：" + cur.records.slice(0, 3).join("・");
+      wrapJa($("setup").querySelector(".picked-bar"));
+    }
   }
+  var expandCards = false;
+  $("pbChange").onclick = function () { expandCards = true; renderCards(); };
 
   // ---------- 自分のお客さまで試す ----------
   function openCustom() {
@@ -1134,6 +1379,7 @@ var TsugiteCore = (function () {
 
   function choose(cid) {
     if (waiting) return;
+    expandCards = false;
     $("customForm").classList.add("hidden");
     var cc = Core.CUSTOMERS[cid];
     if (cc && cc.custom && !(sessions[cid] && sessions[cid].current)) { openCustom(); return; }
@@ -1168,13 +1414,36 @@ var TsugiteCore = (function () {
     var q = s.current;
     $("qno").textContent = s.done ? "" : (s.qNo + "問目");
     var f = $("fuda"); f.innerHTML = "";
-    if (q.acknowledgement) f.appendChild(el("span", "fuda t-承認", "承認"));
+    if (q.acknowledgement) f.appendChild(el("span", "fuda t-承認", "受け止める"));
     if (q.acknowledgement) f.appendChild(document.createTextNode(" "));
-    f.appendChild(el("span", "fuda t-" + q.type, q.type));
+    var FUDA = { "確かめる": q.confirmGuess ? "推測を確かめる" : "記録から確かめる", "選ぶ": "近いものを選ぶ", "噛み砕く": "噛み砕く", "プラスα": "プラスα", "最後のひと押し": "最後のひと押し" };
+    f.appendChild(el("span", "fuda t-" + q.type, FUDA[q.type] || q.type));
     var ack = $("ack");
     ack.classList.toggle("hidden", !q.acknowledgement);
     ack.textContent = (q.acknowledgement || "").replace(/\{name\}/g, vname() ? vname() + "さんだ" : "方だ");
     $("question").textContent = q.question;
+    $("reason").textContent = q.reason ? "この問いの狙い：" + q.reason : "";
+    $("reason").classList.add("hidden");   // 11/7夜の決定：①では狙いを出さない（問いに集中してもらう）。狙いは「これまでのやりとり」に残す
+    var gd = $("guard"); gd.innerHTML = "";
+    var last = s.turns.length ? s.turns[s.turns.length - 1] : null;
+    var G = [
+      [/推測→本人が確認/, "AIの推測を本人が確認 → 本人の言葉へ"],
+      [/推測が外れた/, "推測が外れた → 推測から外し、本人の言い直しを残す"],
+      [/確かめの答えが/, "はい・いいえが読み取れない → 推測は確かめ前のまま"],
+      [/引用が答えに無い/, "答えに無い引用 → 本人の言葉にせず推測へ"],
+      [/又聞き/, "又聞き → 本人の言葉にせず推測へ"],
+      [/承認が続いた/, "受け止めが続いた → 今回は外した"],
+      [/抽象的な答えなので承認/, "抽象的な答え → 受け止めを外した"],
+      [/最後の問いを定型/, "最後の問いを、広く聞く1回に揃えた"],
+      [/問いが広い聞き方/, "広すぎる問い → 記録に残した"]
+    ];
+    var hits = [];
+    if (last && last.notes) last.notes.forEach(function (t) { G.forEach(function (g) { if (g[0].test(t) && hits.indexOf(g[1]) < 0) hits.push(g[1]); }); });
+    if (hits.length) {
+      gd.appendChild(el("span", "glabel", "ページが守ったこと"));
+      hits.forEach(function (h) { gd.appendChild(el("span", "gchip", h)); });
+    }
+    gd.classList.toggle("hidden", !hits.length);
     var ob = $("options"); ob.innerHTML = "";
     if (!s.done) (q.options || []).forEach(function (o) {
       var other = /^他に/.test(o);
@@ -1212,34 +1481,59 @@ var TsugiteCore = (function () {
     if (!s) { $("upd").textContent = "お客さまを選んでください"; setCounts(0, 0, 0); return; }
     $("upd").textContent = s.updates ? ("更新 " + s.updates + "回目") : "まだ更新なし";
     if (!s.board.answered.length) A.appendChild(el("li", "none", "まだありません"));
-    s.board.answered.forEach(function (x) {
-      var li = el("li", x.isNew ? "new" : "");
+    // 新しいものを上に。録画の画面に収まるよう、最新の4件だけ開く
+    var list = s.board.answered.slice().reverse();
+    var SHOW = 3;
+    list.slice(0, SHOW).forEach(function (x) {
+      var li = el("li", (x.isNew ? "new" : "") + (x.promoted ? " promoted" : ""));
       li.appendChild(el("span", "mk self", "本人の言葉"));
-      if (x.isNew) li.appendChild(el("span", "mk new", "今回"));
+      if (x.promoted) li.appendChild(el("span", "mk conf", "AIの推測を本人が確認"));
       li.appendChild(document.createTextNode(x.text));
       if (x.quote) li.appendChild(el("span", "quote", "「" + x.quote + "」"));
+      else if (x.confirmedBy) li.appendChild(el("span", "quote", "本人が「" + x.confirmedBy + "」と確認"));
       A.appendChild(li);
     });
-    if (!s.board.guesses.length) G.appendChild(el("li", "none", "いまはありません"));
-    s.board.guesses.forEach(function (x) {
-      var li = el("li", x.isNew ? "new" : "");
-      li.appendChild(el("span", "mk guess", "AIの推測"));
-      if (x.isNew) li.appendChild(el("span", "mk new", "今回"));
+    if (list.length > SHOW) A.appendChild(el("li", "more", "ほか " + (list.length - SHOW) + " 件（②の引き継ぎカードで全部見られます）"));
+    var asking = s.current && !s.done ? s.current.confirmGuess : "";
+    var rej = (s.board.rejected || []).filter(function (x) { return x.isNew; });
+    if (!s.board.guesses.length && !rej.length) G.appendChild(el("li", "none", "いまはありません"));
+    var gl = s.board.guesses.filter(function (x, i, arr) { return (asking && x.text === asking) || i >= arr.length - 2; });
+    var gHidden = s.board.guesses.length - gl.length;
+    gl.sort(function (a, b) { return (b.text === asking) - (a.text === asking); });
+    gl.forEach(function (x) {
+      var isAsk = asking && x.text === asking;
+      var li = el("li", (x.isNew ? "new" : "") + (isAsk ? " asking" : ""));
+      li.appendChild(el("span", "mk guess", isAsk ? "いま本人に確かめています" : "AIの推測"));
+      li.appendChild(document.createTextNode(x.text));
+      if (x.basis) li.appendChild(el("span", "basis", "根拠：" + (/^記録/.test(x.basis) ? x.basis : "「" + x.basis + "」")));
+      G.appendChild(li);
+    });
+    if (gHidden > 0) G.appendChild(el("li", "none", "ほか " + gHidden + " 件の推測（②で見られます）"));
+    rej.forEach(function (x) {
+      var li = el("li", "rejected");
+      li.appendChild(el("span", "mk guess", "外れた推測"));
       li.appendChild(document.createTextNode(x.text));
       G.appendChild(li);
     });
     if (!s.board.notyet.length) N.appendChild(el("li", "none", "すべて聞けました"));
     s.board.notyet.forEach(function (t) {
       var isNew = (s.board.newNotyet || []).indexOf(t) >= 0;
-      var li = el("li", isNew ? "new" : "");
-      if (isNew) li.appendChild(el("span", "mk new", "今回"));
-      li.appendChild(document.createTextNode(t));
-      N.appendChild(li);
+      N.appendChild(el("li", isNew ? "new" : "", t));
     });
     setCounts(s.board.answered.length, s.board.guesses.length, s.board.notyet.length);
     wrapJa($("board"));
   }
-  function setCounts(a, g, n) { $("cAnswered").textContent = a; $("cGuesses").textContent = g; $("cNotyet").textContent = n; }
+  var lastCounts = [0, 0, 0];
+  function setCounts(a, g, n) {
+    [["nA", a], ["nG", g], ["nN", n]].forEach(function (p, i) {
+      var b = $(p[0]); b.innerHTML = "";
+      b.appendChild(document.createTextNode(String(p[1])));
+      b.appendChild(el("small", "", "件"));
+      if (p[1] !== lastCounts[i]) { b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); }
+      lastCounts[i] = p[1];
+    });
+    $("cAnswered").textContent = a; $("cGuesses").textContent = g; $("cNotyet").textContent = n;
+  }
 
   function renderLog() {
     var s = S(); var ol = $("log"); ol.innerHTML = "";
@@ -1353,51 +1647,142 @@ var TsugiteCore = (function () {
   // ---------- ② 貯める ----------
   function renderTameru() {
     var box = $("hcards"); box.innerHTML = "";
+    box.className = "";
     var ids = Object.keys(Core.CUSTOMERS).filter(function (cid) { return sessions[cid] && sessions[cid].turns.length; });
     if (!ids.length) {
       box.appendChild(el("div", "panel empty-q", "まだ引き継ぎカードはありません。①「聞き出す」でベテランに答えてもらうと、ここに並びます。"));
       wrapJa(box); return;
     }
+    if (currentId && ids.indexOf(currentId) > 0) { ids.splice(ids.indexOf(currentId), 1); ids.unshift(currentId); }
     ids.forEach(function (cid) {
       var c = Core.CUSTOMERS[cid], s = sessions[cid];
-      var card = el("article", "hcard");
-      var h = el("h3"); h.appendChild(document.createTextNode(c.name));
-      h.appendChild(el("span", "co muted", c.company));
-      h.appendChild(el("span", "st", s.done ? "聞き取り完了" : (s.turns.length + "往復")));
-      card.appendChild(h);
-      card.appendChild(el("div", "rec", "記録：" + c.records.join("／")));
-      card.appendChild(el("h4", "g", "ベテランの言葉で分かったこと（" + s.board.answered.length + "）"));
-      Core.LAYER_ORDER.forEach(function (ly) {
-        var items = s.board.answered.filter(function (x) { return (x.layer || "葉") === ly; });
-        if (!items.length) return;
-        var wrap = el("div", "lyr");
-        wrap.appendChild(el("span", "lname", ly + "：" + ({ "根": "なぜ", "幹": "案件の記憶", "葉": "具体", "役割": "誰が行けば" })[ly]));
-        var ul = el("ul");
-        items.forEach(function (x) {
-          var li = el("li", "", x.text);
-          if (x.quote) li.appendChild(el("span", "quote", "「" + x.quote + "」"));
-          ul.appendChild(li);
-        });
-        wrap.appendChild(ul); card.appendChild(wrap);
+      var items = s.board.answered.slice();
+      var used = [];
+      function pick(re, prefer) {
+        var pool = items.filter(function (x) { return used.indexOf(x) < 0 && re.test(x.text + (x.quote || "")); });
+        if (prefer) pool.sort(function (a, b) { return prefer(b) - prefer(a); });
+        var hit = pool[0] || null; if (hit) used.push(hit); return hit;
+      }
+      var when = pick(/曜|午前|午後|朝|夕方|時間帯|月末|週の/, function (x) { return x.promoted ? 0 : 1; });
+      var story = pick(/きっかけ|始まり|記念日|深まった/);
+      var entry = pick(/雑談|話から|本題|メール|書面|要点|1枚|先に|話を最後まで/);
+      var heart = pick(/大切|大事|覚え|気遣|思い/, function (x) { return (x.promoted ? 0 : 2) + (x.layer === "根" ? 1 : 0) + (/覚え|気遣/.test(x.text) ? 1 : 0); });
+
+      var card = el("article", "vcard");
+      var head = el("div", "vhead");
+      head.appendChild(el("h3", "", c.name));
+      head.appendChild(el("span", "rec", "記録：" + c.records.slice(0, 3).join("・")));
+      head.appendChild(el("span", "st", s.done ? "聞き取り完了" : (s.turns.length + "往復 聞き取り済み")));
+      card.appendChild(head);
+
+      card.appendChild(el("div", "ptl", "訪問前の3点")).style.cssText = "font-size:17px;font-weight:800;color:var(--navy);margin-bottom:6px";
+      var three = el("div", "three");
+      [["いつ会えるか", when], ["どう話に入るか", entry], ["心に置く一点", heart]].forEach(function (p) {
+        var x = p[1];
+        var d = el("div", "pt" + (x ? "" : " empty"));
+        d.appendChild(el("div", "ptl", (x ? "" : "") + p[0]));
+        if (x) {
+          d.appendChild(el("div", "ptb", x.text));
+          if (x.quote) d.appendChild(el("div", "ptq", "先輩の言葉「" + x.quote + "」"));
+          else if (x.confirmedBy) d.appendChild(el("div", "ptq", "先輩が「" + x.confirmedBy + "」と確認"));
+        } else {
+          d.appendChild(el("div", "ptb", "まだ聞けていません"));
+          d.appendChild(el("div", "ptq", "次に、先輩に聞きます"));
+        }
+        three.appendChild(d);
       });
+      card.appendChild(three);
+
+      if (story) {
+        var st = el("div", "vstory");
+        st.appendChild(el("span", "lbl", "関係が深まったきっかけ"));
+        st.appendChild(document.createTextNode(story.text + (story.quote ? "　「" + story.quote + "」" : "")));
+        card.appendChild(st);
+      }
+
+      var cols = el("div", "vcols");
+      var left = el("div");
+      var rest = items.filter(function (x) {
+        if (used.indexOf(x) >= 0) return false;
+        // 確かめて移った推測は、ほかの項目と同じ言葉を引いていれば重ねて出さない
+        if (x.promoted && x.quote) return !items.some(function (y) { return y !== x && !y.promoted && y.quote && x.quote.indexOf(y.quote.slice(0, 8)) >= 0; });
+        return true;
+      });
+      left.appendChild(el("h4", "g", "ほかに先輩から聞けたこと（" + rest.length + "）"));
+      var ul = el("ul");
+      if (!rest.length) ul.appendChild(el("li", "", "上の3点とつながっています"));
+      rest.forEach(function (x) { var li = el("li", "", x.text); if (x.quote) li.appendChild(el("span", "quote", "「" + x.quote + "」")); ul.appendChild(li); });
+      left.appendChild(ul);
+      var right = el("div");
+      if (s.board.notyet.length) {
+        right.appendChild(el("h4", "n", "次に先輩に聞くこと"));
+        var tr = el("div", "tagrow");
+        s.board.notyet.forEach(function (t) { tr.appendChild(el("span", "", t)); });
+        right.appendChild(tr);
+      }
       if (s.board.guesses.length) {
-        card.appendChild(el("h4", "p", "AIの推測（確かめが必要）"));
+        right.appendChild(el("h4", "p", "確かめが必要な推測"));
         var ug = el("ul");
         s.board.guesses.forEach(function (x) { ug.appendChild(el("li", "gs", x.text)); });
-        card.appendChild(ug);
+        right.appendChild(ug);
       }
-      if (s.board.notyet.length) {
-        card.appendChild(el("h4", "n", "まだ聞けていないこと"));
-        var un = el("ul");
-        s.board.notyet.forEach(function (t) { un.appendChild(el("li", "ny", t)); });
-        card.appendChild(un);
-      }
-      var go = el("button", "ghost go", "このカードで③日報に返す →"); go.type = "button";
+      cols.appendChild(left); cols.appendChild(right);
+      card.appendChild(cols);
+
+      // 若手の目で読む：後任の若手役のClaudeが、このカードで困りそうなことを質問にする
+      var jr = el("div", "junior");
+      var jh = el("div", "jhead");
+      jh.appendChild(el("span", "role young", "若手の目で読む"));
+      jh.appendChild(el("span", "jsub", "後任の若手役のClaudeが、この1枚だけで訪問すると困りそうなことを、先輩への質問にします"));
+      jr.appendChild(jh);
+      var jlist = el("ol", "jlist");
+      (s.juniorQs || []).forEach(function (x) {
+        var li = el("li"); li.appendChild(el("span", "jq", x.q)); if (x.why) li.appendChild(el("span", "jwhy", "なぜ：" + x.why));
+        jlist.appendChild(li);
+      });
+      jr.appendChild(jlist);
+      var jb = el("button", "ghost jbtn", s.juniorQs ? "もう一度、若手の目で読む" : "若手の目で読む（Claude）"); jb.type = "button";
+      var jst = el("span", "status hidden", "若手が読んでいます…");
+      var jerr = el("div", "error");
+      jb.onclick = function () { readAsJunior(cid, jb, jst, jerr); };
+      var ja = el("div", "actions"); ja.appendChild(jb); ja.appendChild(jst); jr.appendChild(ja); jr.appendChild(jerr);
+      if (s.juniorQs && s.juniorQs.length) jr.appendChild(el("div", "jnote", "この質問は「次に先輩に聞くこと」にも入りました。①で、若手が先輩に読み上げて聞けます。"));
+      card.appendChild(jr);
+
+      var go = el("button", "send go", "このカードで、日報に返す →"); go.type = "button";
+      go.style.marginTop = "16px";
       go.onclick = function () { wcid = cid; showTab("watasu"); };
       card.appendChild(go);
       box.appendChild(card);
     });
     wrapJa(box);
+  }
+
+  function readAsJunior(cid, btn, st, errBox) {
+    var s = sessions[cid]; if (!s) return;
+    errBox.classList.remove("show");
+    function done(list) {
+      s.juniorQs = list;
+      list.forEach(function (x) { if (s.board.notyet.indexOf("若手から：" + x.q) < 0) s.board.notyet.push("若手から：" + x.q); });
+      renderTameru();
+    }
+    if (sampleMode) {
+      if (cid !== "A") { errBox.textContent = "見本で読めるのはA社長のカードだけです。"; errBox.classList.add("show"); return; }
+      btn.disabled = true; st.classList.remove("hidden");
+      setTimeout(function () { done(Core.SAMPLE_JUNIOR.slice()); }, 900);
+      return;
+    }
+    if (!ready || (!sampleFn && !backend)) { errBox.textContent = "Claudeとつながる準備をしています。数秒待ってから、もう一度お試しください。"; errBox.classList.add("show"); return; }
+    btn.disabled = true; st.classList.remove("hidden");
+    var prompt = Core.buildJuniorPrompt(cid, s); lastPrompt = prompt;
+    callAI(prompt, new AbortController().signal).then(function (raw) {
+      var list = Core.normalizeJunior(raw);
+      if (!list.length) throw { code: "invalid_json" };
+      done(list);
+    }).then(null, function (e) {
+      btn.disabled = false; st.classList.add("hidden");
+      if (e && e.code !== "cancelled") { errBox.textContent = errorText(e && e.code); errBox.classList.add("show"); }
+    });
   }
 
   // ---------- ③ 渡す ----------
@@ -1418,10 +1803,21 @@ var TsugiteCore = (function () {
     var name = vname() ? vname() + "さん" : "前任の先輩";
     $("wempty").classList.add("hidden"); $("wbody").classList.remove("hidden");
     $("rUke").textContent = r.uketome;
-    $("rStory").textContent = r.story.replace(/\{name\}/g, name);
-    var t = $("rCtype"); t.className = "fuda t-" + r.closing_type; t.textContent = "締め：" + r.closing_type;
+    // 物語の中の「本人の言葉」に下線を引いて、引き継ぎカードから届いたことを見せる
+    var story = $("rStory"); story.innerHTML = "";
+    String(r.story.replace(/\{name\}/g, name)).split(/(「[^」]+」)/).forEach(function (part) {
+      if (/^「[^」]+」$/.test(part)) story.appendChild(el("q", "", part.slice(1, -1)));
+      else if (part) story.appendChild(document.createTextNode(part));
+    });
+    var LABEL = { "問い": "締め：問い", "承認・励まし": "締め：励まし", "意識する一点": "締め：意識する一点" };
+    var t = $("rCtype"); t.className = "fuda t-" + r.closing_type; t.textContent = LABEL[r.closing_type] || ("締め：" + r.closing_type);
     $("rClose").textContent = r.closing;
-    $("rUsed").textContent = r.used_quotes.length ? ("引き継ぎカードから使った本人の言葉：" + r.used_quotes.map(function (q) { return "「" + q + "」"; }).join("")) : "";
+    var u = $("rUsed"); u.innerHTML = ""; u.className = r.used_quotes.length ? "arrived" : "used";
+    if (r.used_quotes.length) {
+      var c = Core.CUSTOMERS[wcid];
+      u.appendChild(el("b", "", "先輩の言葉が" + r.used_quotes.length + "つ届きました"));
+      u.appendChild(document.createTextNode("　（" + (c ? c.name : "") + "の引き継ぎカードから。下線の言葉です）"));
+    }
     wrapJa($("wreply"));
   }
   function wError(msg) { $("werrorMsg").textContent = msg; $("werror").classList.add("show"); wrapJa($("werror")); }
