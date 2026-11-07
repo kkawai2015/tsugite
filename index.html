@@ -60,6 +60,8 @@
     padding: 10px 26px 12px; border-radius: 12px 12px 0 0; font-size: 19px;
     font-family: var(--mincho); font-weight: 700; letter-spacing: .06em;
   }
+  nav.tabs button .tsub { display: block; font-size: 12px; font-weight: 400; letter-spacing: 0; opacity: .85; margin-top: 2px; font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif; white-space: nowrap; }
+  @media (max-width: 520px) { nav.tabs button .tsub { font-size: 10px; } }
   nav.tabs button:hover { background: rgba(255,255,255,.2); }
   nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--navy); }
 
@@ -283,12 +285,12 @@
       <path d="M6 12 H19 M6 18 H20 M6 24 H18 M37 12 H48 M38 18 H48 M37 24 H48" stroke="rgba(120,80,30,.28)" stroke-width="1"/>
     </svg>
     <h1>継ぎ手</h1><span class="en">TSUGITE</span>
-    <span class="tag">ベテランに聞き出す → 貯める → 若手に渡す</span>
+    <span class="tag">ベテランの営業ノウハウを、若手へ</span>
   </div>
   <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す</button>
-    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める</button>
-    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す</button>
+    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す<small class="tsub">ベテランに聞く</small></button>
+    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める<small class="tsub">引き継ぎカードにまとめる</small></button>
+    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">若手が実践して振り返る</small></button>
   </nav>
 </header>
 
@@ -300,15 +302,10 @@
     <div class="panel setup">
       <div class="setup-head">
         <h2>お客さまを1人選ぶ</h2>
-        <div class="name-row">
-          <label for="vname">ベテランのお名前</label>
-          <input id="vname" type="text" placeholder="例：佐藤" autocomplete="off"><span>さん</span>
-          <span class="muted">（承認の一文で使います。空でもかまいません）</span>
-        </div>
       </div>
       <div class="cards" id="cards"></div>
       <div id="customForm" class="custom-form hidden">
-        <div class="caution">実名・会社名・連絡先は入れないでください。会話は保存されません。</div>
+        <div class="caution">お試し版のため、会話は保存されません。お名前は「D社長」のように置き換えて入れてください。</div>
         <div class="cf-grid">
           <label>呼び名<input id="cfName" type="text" placeholder="例：D社長" autocomplete="off"></label>
           <label>取引年数<input id="cfYears" type="text" placeholder="例：12年" autocomplete="off"></label>
@@ -333,24 +330,17 @@
             <div class="qhead">
               <span class="qno" id="qno"></span>
               <span id="fuda"></span>
-              <div class="layers" id="layers" aria-label="問いの4層">
-                <span>この問いは</span>
-                <span class="layer" data-layer="根">根<small>なぜ</small></span>
-                <span class="layer" data-layer="幹">幹<small>案件の記憶</small></span>
-                <span class="layer" data-layer="葉">葉<small>具体</small></span>
-                <span class="layer" data-layer="役割">役割<small>誰が行けば</small></span>
-              </div>
             </div>
             <div id="ack" class="ack hidden"></div>
             <div id="question" class="question"></div>
             <div id="reason" class="reason hidden"></div>
             <div id="options" class="options"></div>
             <div id="answerBox" class="answer-box">
-              <textarea id="answer" placeholder="ここに話して入れてください（選択肢を押すと、ここに入ります）"></textarea>
-              <div class="voice">話して入れる：Mac＝音声入力キー（🎤）／Windows＝Windowsキー＋H／iPhone＝キーボードのマイク</div>
+              <textarea id="answer" placeholder="文字で書くか、話して入れてください。選択肢を押すと、ここに入ります。ひと言足すと、引き継ぎが濃くなります。"></textarea>
+              <div class="voice">文字でも入力できます。話して入れるときは：Mac＝音声入力キー（🎤）／Windows＝Windowsキー＋H／iPhone＝キーボードのマイク</div>
               <div class="actions">
                 <button id="send" class="send">答える</button>
-                <span id="status" class="status hidden">聞き取り中<span class="dots"></span></span>
+                <span id="status" class="status hidden">次の問いを考え中<span class="dots"></span></span>
                 <button id="stop" class="ghost hidden">やめる</button>
               </div>
             </div>
@@ -390,7 +380,7 @@
   <section id="tab-tameru" role="tabpanel" class="hidden">
     <div class="panel tameru-head">
       <h2>引き継ぎカード</h2>
-      <div class="muted">①で聞き出した内容が、お客さまごとに並びます。ベテラン本人の言葉を、問いの4層（根・幹・葉・役割）に分けています。保存はしません（ページを閉じると消えます）。</div>
+      <div class="muted">①でベテランが答えた内容が、お客さまごとの「引き継ぎカード」になります。後任の若手は、訪問の前にこのカードを読みます。カードは4つに分けています――「なぜ」（大切にしていること）、「案件の記憶」（関係が深まったきっかけ）、「具体」（会える曜日や話の入り方）、「誰が行けば」（話が通る人）。お試し版のため保存はしません（ページを閉じると消えます）。</div>
     </div>
     <div id="hcards" class="hcards"></div>
   </section>
@@ -400,7 +390,7 @@
       <div>
         <div class="panel">
           <h2>若手の日報に返す</h2>
-          <div class="muted">答えを渡しきらず、引き継ぎカードにある「先輩の物語」で返します。締めは「問い」「承認・励まし」「意識する一点」のどれかです。</div>
+          <div class="muted">若手が訪問してみて、日報を書く。継ぎ手は答えを渡しきらず、引き継ぎカードにある「先輩の物語」で返します。締めは「問い」「承認・励まし」「意識する一点」のどれか。やってみる → 振り返る → 次の一歩、を回していきます。</div>
           <div class="chips" id="wchips"></div>
           <label class="field-label" for="nippo">若手の日報</label>
           <textarea id="nippo" class="nippo" placeholder="今日の訪問で起きたこと、困ったことを書いてください"></textarea>
@@ -1051,7 +1041,7 @@ var TsugiteCore = (function () {
   var lastPrompt = "";
 
   function S() { return currentId ? sessions[currentId] : null; }
-  function vname() { return $("vname").value.trim(); }
+  function vname() { return ""; }
 
   // ---------- Claudeを呼べるか ----------
   function setSampleMode(on) {
@@ -1104,6 +1094,8 @@ var TsugiteCore = (function () {
 
   // ---------- 自分のお客さまで試す ----------
   function openCustom() {
+    if (waiting) return;
+    currentId = null; hideError(); renderAll();
     $("customForm").classList.remove("hidden");
     $("cfError").classList.remove("show");
     $("cfName").focus();
@@ -1115,28 +1107,36 @@ var TsugiteCore = (function () {
     $("cfError").classList.remove("show");
     if (sampleMode) { cfError("自分のお客さまで試すには、claude.ai で公開ページを開いてください（このページから Claude を呼べる環境が必要です）。"); return; }
     if (!ready || (!sampleFn && !backend)) { cfError("Claudeとつながる準備をしています。数秒待ってから、もう一度お試しください。"); return; }
+    var prevCustomer = Core.CUSTOMERS.X || null;
     var c = Core.setCustom({
       name: $("cfName").value.trim(), years: $("cfYears").value.trim(), products: $("cfProducts").value.trim(),
       visits: $("cfVisits").value.trim(), memo: $("cfMemo").value.trim()
     });
-    delete sessions.X;
     var prompt = Core.buildFirstPrompt(c, vname());
     lastPrompt = prompt;
     waiting = true; $("cfStart").disabled = true; $("cfStatus").classList.remove("hidden");
     callAI(prompt, new AbortController().signal).then(function (raw) {
-      sessions.X = Core.startCustom(raw, c);
+      var started = Core.startCustom(raw, c);
+      if (!started || !started.current) throw { code: "invalid_json" };
+      sessions.X = started;
       currentId = "X";
       $("customForm").classList.add("hidden");
       hideError();
       renderAll();
       $("qpanel").scrollIntoView({ behavior: "smooth", block: "start" });
-    }, function (e) {
+    }).then(null, function (e) {
+      // 失敗したら、前のお客さま（と聞き取り）をそのまま残す
+      if (prevCustomer) Core.CUSTOMERS.X = prevCustomer; else delete Core.CUSTOMERS.X;
+      renderCards();
       if (e && e.code !== "cancelled") cfError(errorText(e && e.code));
     }).then(function () { waiting = false; $("cfStart").disabled = false; $("cfStatus").classList.add("hidden"); });
   };
 
   function choose(cid) {
     if (waiting) return;
+    $("customForm").classList.add("hidden");
+    var cc = Core.CUSTOMERS[cid];
+    if (cc && cc.custom && !(sessions[cid] && sessions[cid].current)) { openCustom(); return; }
     if (sampleMode && cid !== "A") {
       currentId = cid;
       if (!sessions[cid]) sessions[cid] = Core.newSession(cid);
@@ -1171,15 +1171,10 @@ var TsugiteCore = (function () {
     if (q.acknowledgement) f.appendChild(el("span", "fuda t-承認", "承認"));
     if (q.acknowledgement) f.appendChild(document.createTextNode(" "));
     f.appendChild(el("span", "fuda t-" + q.type, q.type));
-    Array.prototype.forEach.call(document.querySelectorAll("#layers .layer"), function (x) {
-      x.classList.toggle("on", x.getAttribute("data-layer") === q.layer && !s.done);
-    });
     var ack = $("ack");
     ack.classList.toggle("hidden", !q.acknowledgement);
     ack.textContent = (q.acknowledgement || "").replace(/\{name\}/g, vname() ? vname() + "さんだ" : "方だ");
     $("question").textContent = q.question;
-    $("reason").textContent = q.reason ? "この問いの狙い：" + q.reason : "";
-    $("reason").classList.toggle("hidden", !q.reason);
     var ob = $("options"); ob.innerHTML = "";
     if (!s.done) (q.options || []).forEach(function (o) {
       var other = /^他に/.test(o);
@@ -1256,7 +1251,7 @@ var TsugiteCore = (function () {
       q.appendChild(el("span", "", "Q" + (i + 1) + " "));
       if (t.q.acknowledgement) { q.appendChild(el("span", "fuda t-承認", "承認")); q.appendChild(document.createTextNode(" ")); }
       q.appendChild(el("span", "fuda t-" + t.q.type, t.q.type));
-      q.appendChild(document.createTextNode(" ［" + t.q.layer + "］ " + t.q.question));
+      q.appendChild(document.createTextNode(" " + t.q.question));
       li.appendChild(q);
       if (t.q.reason) li.appendChild(el("div", "muted", "狙い：" + t.q.reason));
       li.appendChild(el("div", "a", "答え：" + t.a));
@@ -1330,7 +1325,7 @@ var TsugiteCore = (function () {
     }, function (e) {
       setWaiting(false);
       var code = e && e.code;
-      if (code === "cancelled") return;
+      if (code === "cancelled" || (ctl && ctl.signal.aborted) || (e && e.name === "AbortError")) return;
       showError(errorText(code), code !== "not_granted" && code !== "sampling_disabled" && code !== "not_declared");
     });
   }
@@ -1350,10 +1345,9 @@ var TsugiteCore = (function () {
   $("retry").onclick = function () { if ($("answer").value.trim() === "" && lastAnswer) $("answer").value = lastAnswer; submit(); };
   $("toSample").onclick = function () {
     setSampleMode(true); hideError();
-    sessions = {};
+    sessions = {}; delete Core.CUSTOMERS.X; $("customForm").classList.add("hidden");
     choose("A");
   };
-  $("vname").addEventListener("input", function () { renderQuestion(); });
 
 
   // ---------- ② 貯める ----------
@@ -1479,7 +1473,7 @@ var TsugiteCore = (function () {
   });
 
   // 検証用の入口（画面の外から状態を見る・呼び出し先を差し替える）
-  window.TSUGITE = {
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.TSUGITE = {
     core: Core,
     state: function () { return { currentId: currentId, sampleMode: sampleMode, sessions: sessions }; },
     lastPrompt: function () { return lastPrompt; },
