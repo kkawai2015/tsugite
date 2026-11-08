@@ -391,9 +391,9 @@
     <span class="tag">ベテランの営業ノウハウを、若手へ<span id="samplepill" class="samplepill">見本の流れ</span></span>
   </div>
   <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す<small class="tsub">話す人：ベテラン</small></button>
-    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める<small class="tsub">読む人：後任の若手</small></button>
-    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">書く人：後任の若手</small></button>
+    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す<small class="tsub">話す人：ベテラン（前任者）</small></button>
+    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める<small class="tsub">読む人：若手（後任者）</small></button>
+    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">書く人：若手（後任者）</small></button>
   </nav>
 </header>
 
@@ -402,7 +402,7 @@
 
   <!-- タブ① 聞き出す -->
   <section id="tab-kikidasu" role="tabpanel">
-    <div class="roleline"><span class="role">話す人：ベテラン（来春退職）</span>ベテランと後任の若手が、一緒に見る画面です。問いは若手が読み上げても使えます。</div>
+    <div class="roleline"><span class="role">話す人：ベテラン（前任者）</span>ベテランと若手が、一緒に見る画面です。問いは若手が読み上げても使えます。</div>
     <div class="panel setup" id="setup">
       <div class="picked-bar"><span class="who" id="pbWho"></span><span class="rec" id="pbRec"></span><button id="pbChange" class="ghost" type="button">お客さまを切り替える</button></div>
       <div class="setup-head">
@@ -484,14 +484,14 @@
   </section>
 
   <section id="tab-tameru" role="tabpanel" class="hidden">
-    <div class="roleline"><span class="role young">読む人：後任の若手</span>訪問の前に、この1枚を読みます。（お試し版のため保存はしません）</div>
+    <div class="roleline"><span class="role young">読む人：若手（後任者）</span>訪問の前に、この1枚を読みます。（お試し版のため保存はしません）</div>
     <div id="hcards" class="hcards"></div>
   </section>
 
   <section id="tab-watasu" role="tabpanel" class="hidden">
     <div class="layout">
       <div>
-        <div class="roleline"><span class="role young">書く人：後任の若手</span>訪問して日報を書くと、先輩の言葉で返ってきます。</div>
+        <div class="roleline"><span class="role young">書く人：若手（後任者）</span>訪問して日報を書くと、先輩の言葉で返ってきます。</div>
         <div class="panel">
           <h2>若手の日報に返す</h2>
           <div class="muted">答えは渡しきりません。締めは「問い」「励まし」「意識する一点」のどれかです。</div>
@@ -615,7 +615,7 @@ var TsugiteCore = (function () {
   var CUSTOMERS = {
     A: {
       id: "A", name: "A社長", company: "A社（架空）",
-      records: ["取引18年", "主な納品物：精密シャフト・治具", "訪問：月2回（18年間ほぼ途切れず）", "先方窓口：A社長（社長が直接）", "当社担当：ベテラン営業（来春退職）"],
+      records: ["取引18年", "主な納品物：精密シャフト・治具", "訪問：月2回（18年間ほぼ途切れず）", "先方窓口：A社長（社長が直接）", "当社担当：ベテラン営業（前任者）"],
       first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
                reason: "記録の「月2回を18年」から、会い方に決まりがあると読んで確かめます",
                question: "A社長とは、訪問の曜日や時間帯がだいたい決まっている印象です。合っていますか？" },
@@ -623,7 +623,7 @@ var TsugiteCore = (function () {
     },
     B: {
       id: "B", name: "B社長", company: "B社（架空）",
-      records: ["取引9年", "主な納品物：樹脂成形部品", "訪問：月1回（1回の訪問記録が長め・平均90分）", "先方窓口：B社長", "当社担当：ベテラン営業（来春退職）"],
+      records: ["取引9年", "主な納品物：樹脂成形部品", "訪問：月1回（1回の訪問記録が長め・平均90分）", "先方窓口：B社長", "当社担当：ベテラン営業（前任者）"],
       first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
                reason: "記録の「訪問が平均90分」から、雑談の時間が長いと読んで確かめます",
                question: "B社長とは訪問が長めなので、本題の前に雑談の時間をとっている印象です。合っていますか？" },
@@ -631,7 +631,7 @@ var TsugiteCore = (function () {
     },
     C: {
       id: "C", name: "C部長", company: "C社（架空）",
-      records: ["取引4年", "主な納品物：検査用ゲージ", "訪問：四半期に1回（やりとりの8割はメール）", "先方窓口：C部長（購買部）", "当社担当：ベテラン営業（来春退職）"],
+      records: ["取引4年", "主な納品物：検査用ゲージ", "訪問：四半期に1回（やりとりの8割はメール）", "先方窓口：C部長（購買部）", "当社担当：ベテラン営業（前任者）"],
       first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
                reason: "記録の「やりとりの8割がメール」から、書面を好むと読んで確かめます",
                question: "C部長とは、訪問より先にメールで要点を送るほうが話が進む印象です。合っていますか？" },
@@ -1737,7 +1737,7 @@ var TsugiteCore = (function () {
       var jr = el("div", "junior");
       var jh = el("div", "jhead");
       jh.appendChild(el("span", "role young", "若手の目で読む"));
-      jh.appendChild(el("span", "jsub", "後任の若手役のClaudeが、この1枚だけで訪問すると困りそうなことを、先輩への質問にします"));
+      jh.appendChild(el("span", "jsub", "若手役のClaudeが、この1枚だけで訪問すると困りそうなことを、先輩への質問にします"));
       jr.appendChild(jh);
       var jlist = el("ol", "jlist");
       (s.juniorQs || []).forEach(function (x) {
