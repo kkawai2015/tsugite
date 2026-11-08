@@ -434,12 +434,12 @@
       <path d="M6 12 H19 M6 18 H20 M6 24 H18 M37 12 H48 M38 18 H48 M37 24 H48" stroke="rgba(120,80,30,.28)" stroke-width="1"/>
     </svg>
     <h1>継ぎ手</h1><span class="en">TSUGITE</span>
-    <span class="tag">ベテランの営業ノウハウを、若手へ<span id="samplepill" class="samplepill">見本の流れ</span></span>
+    <span class="tag">自分の仕事を、次の世代に残す。<span id="samplepill" class="samplepill">見本の流れ</span></span>
   </div>
   <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す<small class="tsub">話す人：ベテラン（前任者）</small></button>
-    <button role="tab" aria-selected="false" data-tab="tameru">② 貯める<small class="tsub">読む人：若手（後任者）</small></button>
-    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">振り返る人：若手（後任者）</small></button>
+    <button role="tab" aria-selected="true" data-tab="kikidasu">① 話す<small class="tsub">選択肢に答えるだけ</small></button>
+    <button role="tab" aria-selected="false" data-tab="tameru">② 残す<small class="tsub">お客さまごとに</small></button>
+    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">若手の日報に届く</small></button>
   </nav>
 </header>
 
@@ -448,7 +448,7 @@
 
   <!-- タブ① 聞き出す -->
   <section id="tab-kikidasu" role="tabpanel">
-    <div class="roleline"><span class="role">話す人：ベテラン（前任者）</span>ベテランと若手が、一緒に見る画面です。問いは若手が読み上げても使えます。</div>
+    <div class="roleline"><span class="role">ベテラン（前任者）が話す</span>AIにも代わりがきかない、現場のやり取りの知恵。ベテランは、問いに選択肢で答えるだけです。問いは若手が読み上げても使えます。</div>
     <div class="panel setup" id="setup">
       <div class="picked-bar"><span class="who" id="pbWho"></span><span class="rec" id="pbRec"></span><button id="pbChange" class="ghost" type="button">お客さまを切り替える</button></div>
       <div class="setup-head">
@@ -496,7 +496,7 @@
                 <button id="stop" class="ghost hidden">やめる</button>
               </div>
             </div>
-            <div id="doneNote" class="done-note hidden">聞き取りが終わりました。②「貯める」に、引き継ぎカードとして並んでいます。</div>
+            <div id="doneNote" class="done-note hidden">聞き取りが終わりました。②「残す」に、お客さまごとの引き継ぎカードとして残りました。</div>
             <div id="error" class="error">
               <div id="errorMsg"></div>
               <div class="actions">
@@ -530,16 +530,16 @@
   </section>
 
   <section id="tab-tameru" role="tabpanel" class="hidden">
-    <div class="roleline"><span class="role young">読む人：若手（後任者）</span>訪問の前に、この1枚を読みます。（お試し版のため保存はしません）</div>
+    <div class="roleline"><span class="role">ベテランの知恵を残す</span>気づかないうちに貯まり、気づかないうちに消えてしまう知恵を、お客さまごとに残します。若手は訪問の前にこの1枚を読みます。（お試し版のため保存はしません）</div>
     <div id="hcards" class="hcards"></div>
   </section>
 
   <section id="tab-watasu" role="tabpanel" class="hidden">
     <div class="layout">
       <div>
-        <div class="roleline"><span class="role young">振り返る人：若手（後任者）</span>いつもの日報（SFAなど）に書いた内容が届くと、継ぎ手が先輩の言葉を添えます。</div>
+        <div class="roleline"><span class="role">ベテランの言葉を渡す</span>若手（後任者）がいつもの日報（SFAなど）を書くと、残した言葉がそこに届きます。</div>
         <div class="panel">
-          <h2>届いた日報</h2>
+          <h2>若手から届いた日報</h2>
           <div class="muted">ここで書き直す必要はありません。日報を1つ選んでください（見本の日報です）。</div>
           <div id="wfeed" class="wfeed"></div>
           <details class="wtry"><summary>自分で日報を書いて試す</summary>
@@ -547,15 +547,15 @@
             <div class="voice">話して入れる：Mac＝音声入力キー（🎤）／Windows＝Windowsキー＋H／iPhone＝キーボードのマイク</div>
           </details>
           <div class="actions">
-            <button id="wsend" class="send">先輩の言葉を受け取る</button>
+            <button id="wsend" class="send">先輩の言葉を届ける</button>
             <span id="wstatus" class="status hidden">先輩の言葉を探しています<span class="dots"></span></span>
           </div>
           <div id="werror" class="error"><div id="werrorMsg"></div></div>
         </div>
       </div>
       <aside class="panel wreply" id="wreply">
-        <h2>先輩の言葉</h2>
-        <div id="wempty" class="empty-q">日報を選んで「先輩の言葉を受け取る」を押すと、引き継ぎカードにある先輩の言葉が、ここに届きます。</div>
+        <h2>若手に届いた、先輩の言葉</h2>
+        <div id="wempty" class="empty-q">日報を選んで「先輩の言葉を届ける」を押すと、残しておいた先輩の言葉が、ここに届きます。</div>
         <div id="wbody" class="hidden">
           <div class="rblock"><span class="fuda t-受け止める">受け止める</span><p id="rUke"></p></div>
           <div class="rblock"><span class="fuda t-物語">先輩の物語</span><p id="rStory" class="story"></p></div>
@@ -568,7 +568,7 @@
   <details class="panel evalbox" id="evalbox">
     <summary>この画面の検証（43件）　直す前 → 直した後</summary>
     <div class="evalgrid">
-      <div><h4>① 聞き出す 10件</h4>
+      <div><h4>① 話す 10件</h4>
         <p>本人が言っていないことを本人の言葉にした仕分け<br><b>0<small>件</small></b></p>
         <p>抽象的な答えに噛み砕く問い<br><b>2<small>件中</small>2</b></p>
         <p>行間の推測が、本人の言葉を根拠に出た<br><b>10<small>件中</small>10</b></p></div>
@@ -1571,7 +1571,7 @@ var TsugiteCore = (function () {
       $("doneNote").classList.remove("hidden");
       $("doneNote").textContent = "見本はここまでです（A社長の3往復）。Claudeを呼べる環境では、このあとも聞き取りが続きます。";
     } else {
-      $("doneNote").textContent = "聞き取りが終わりました。②「貯める」に、引き継ぎカードとして並んでいます。";
+      $("doneNote").textContent = "聞き取りが終わりました。②「残す」に、お客さまごとの引き継ぎカードとして残りました。";
     }
     wrapJa($("qarea"));
   }
@@ -1765,7 +1765,7 @@ var TsugiteCore = (function () {
     box.className = "";
     var ids = Object.keys(Core.CUSTOMERS).filter(function (cid) { return sessions[cid] && sessions[cid].turns.length; });
     if (!ids.length) {
-      box.appendChild(el("div", "panel empty-q", "まだ引き継ぎカードはありません。①「聞き出す」でベテランに答えてもらうと、ここに並びます。"));
+      box.appendChild(el("div", "panel empty-q", "まだ引き継ぎカードはありません。①「話す」でベテランが答えると、ここに残ります。"));
       wrapJa(box); return;
     }
     // 前任者が、お客さまに関わらず大切にしていたこと（全員の聞き取りから集める）
@@ -1909,7 +1909,7 @@ var TsugiteCore = (function () {
       if (s.juniorQs && s.juniorQs.length) jr.appendChild(el("div", "jnote", "この質問は「次に先輩に聞くこと」にも入りました。①で、若手が先輩に読み上げて聞けます。"));
       card.appendChild(jr);
 
-      var go = el("button", "send go", "この人の日報に、先輩の言葉を添える →"); go.type = "button";
+      var go = el("button", "send go", "この人の日報に、言葉を渡す →"); go.type = "button";
       go.style.marginTop = "16px";
       go.onclick = function () {
         wcid = cid; wpick = -1;
