@@ -394,6 +394,20 @@
   .cosec { margin: 6px 0 12px; display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; }
   .cosec h2 { margin: 0; font-size: 26px; }
   .cosec .corecent { margin: 0; font-size: 15px; }
+  .commonbox { background: var(--navy); color: #fff; border-radius: 16px; padding: 16px 22px 18px; margin-bottom: 22px; }
+  .commonbox .chead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .commonbox h2 { color: #fff; margin: 0; font-size: 24px; }
+  .commonbox .role { background: #fff; }
+  .commonbox .csub { font-size: 15px; opacity: .85; margin: 4px 0 10px; }
+  .commonbox .clist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 860px) { .commonbox .clist { grid-template-columns: 1fr; } }
+  .commonbox .clist li { background: rgba(255,255,255,.1); border-left: 5px solid var(--wood); border-radius: 0 10px 10px 0; padding: 8px 12px; }
+  .commonbox .clist b { font-size: 20px; display: block; }
+  .commonbox .quote { display: block; font-size: 15px; opacity: .9; }
+  .commonbox .cfrom { display: block; font-size: 13px; opacity: .7; }
+  .commonbox .cempty { font-size: 16px; opacity: .85; }
+  .pertitle { font-size: 22px; margin: 4px 0 8px; }
+  .mk.common { background: var(--navy); color: #fff; }
 </style>
 </head>
 <body>
@@ -600,13 +614,14 @@ var TsugiteCore = (function () {
     '  "options": ["選択肢1", "選択肢2", "選択肢3", "他にありますか？"],',
     '  "layer": "根 | 幹 | 葉 | 役割",',
     '  "board_add": {',
-    '    "answered": [{"text": "答えてもらえたこと（短く）", "source": "本人の言葉 | AIの推測", "quote": "本人の言葉のときは原文をそのまま"}],',
+    '    "answered": [{"text": "答えてもらえたこと（短く）", "source": "本人の言葉 | AIの推測", "quote": "本人の言葉のときは原文をそのまま", "scope": "このお客さま | どのお客さまにも"}],',
     '    "notyet": ["まだ聞けていないこと（短く）"]',
     "  },",
     '  "board_remove_notyet": ["今回の答えで埋まった『まだのこと』"],',
     '  "guess": {"text": "行間を読んだ推測（40字以内。「〜かもしれない」で終える）", "basis": "根拠にした本人の言葉（これまでの答えの原文どおり）"},',
     '  "confirm_guess": "ボードの推測を確かめる問いのときだけ、その推測の文言をそのまま。ほかは空文字"',
     "}",
+    "- scope：答えが「このお客さま」だけの対応か、ベテランが「どのお客さまにも」大切にしている考え方・習慣かを分ける。「いつも」「どこでも」「俺は〜にしてる」のように、相手を問わない言い方なら「どのお客さまにも」。迷ったら「このお客さま」。",
     "- guess（行間を読む推測）：毎回1件立てる。本人の言葉から一歩だけ先を読み、お客さまの気持ち・理由・人柄について考える。主張は1つだけ（「AやB」のように2つを混ぜない。確かめたときに一部だけ当たるのを防ぐ）。言い切らず「〜かもしれない」で終える。根拠（basis）は必ず本人が言った言葉の原文。根拠が無ければ空にする。",
     "- type が「確かめる」のときは options を [\"はい\", \"いいえ\", \"少し違う\"] にする。",
     "- 「最後のひと押し」のときだけ options を空にする。",
@@ -967,7 +982,7 @@ var TsugiteCore = (function () {
       if (self && isHearsay(quote + " " + text)) { n.notes.push("又聞き→本人の言葉にしない：" + quote); self = false; }
       if (self) {
         if (s.board.answered.some(function (x) { return similar(x.text, text); })) return;
-        s.board.answered.push({ text: text, quote: quote, layer: s.current.layer, isNew: true });
+        s.board.answered.push({ text: text, quote: quote, layer: s.current.layer, isNew: true, scope: str(it.scope) === "どのお客さまにも" ? "common" : "this" });
         s.board.guesses = s.board.guesses.filter(function (g) { return !similar(g.text, text); });
       } else {
         if (s.board.guesses.some(function (x) { return similar(x.text, text); })) return;
@@ -1053,7 +1068,7 @@ var TsugiteCore = (function () {
         board_add: {
           answered: [
             { text: "A社長が大事にしているのは社員さん", source: "本人の言葉", quote: "社長が大事にしてるのは社員さんなんだよ" },
-            { text: "受付の方の名前は全部覚えている", source: "本人の言葉", quote: "受付の人の名前は全部覚えてる" }
+            { text: "受付の方の名前は全部覚えている", source: "本人の言葉", quote: "受付の人の名前は全部覚えてる", scope: "どのお客さまにも" }
           ],
           notyet: ["若手が受付の方と関係をつくる一歩目"]
         },
@@ -1153,7 +1168,7 @@ var TsugiteCore = (function () {
     var lines = [];
     LAYER_ORDER.forEach(function (ly) {
       s.board.answered.filter(function (x) { return (x.layer || "葉") === ly; }).forEach(function (x) {
-        lines.push("- ［" + ly + "］" + x.text + "　本人の言葉：「" + x.quote + "」");
+        lines.push("- ［" + ly + (x.scope === "common" ? "・どのお客さまにも" : "") + "］" + x.text + "　本人の言葉：「" + (x.quote || x.confirmedBy || "") + "」");
       });
     });
     if (!lines.length) lines.push("- （本人の言葉はまだありません）");
@@ -1161,6 +1176,7 @@ var TsugiteCore = (function () {
     if (s.board.notyet.length) lines.push("まだ聞けていないこと：" + s.board.notyet.join("／"));
     return lines.join("\n");
   }
+
 
   function buildReplyPrompt(cid, s, nippo, veteranName, recentClosings) {
     var c = CUSTOMERS[cid];
@@ -1550,6 +1566,7 @@ var TsugiteCore = (function () {
       var li = el("li", (x.isNew ? "new" : "") + (x.promoted ? " promoted" : ""));
       li.appendChild(el("span", "mk self", "本人の言葉"));
       if (x.promoted) li.appendChild(el("span", "mk conf", "AIの推測を本人が確認"));
+      if (x.scope === "common") li.appendChild(el("span", "mk common", "どのお客さまにも"));
       li.appendChild(document.createTextNode(x.text));
       if (x.quote) li.appendChild(el("span", "quote", "「" + x.quote + "」"));
       else if (x.confirmedBy) li.appendChild(el("span", "quote", "本人が「" + x.confirmedBy + "」と確認"));
@@ -1715,6 +1732,34 @@ var TsugiteCore = (function () {
       box.appendChild(el("div", "panel empty-q", "まだ引き継ぎカードはありません。①「聞き出す」でベテランに答えてもらうと、ここに並びます。"));
       wrapJa(box); return;
     }
+    // 前任者が、お客さまに関わらず大切にしていたこと（全員の聞き取りから集める）
+    var common = [];
+    ids.forEach(function (cid) {
+      sessions[cid].board.answered.filter(function (x) { return x.scope === "common"; }).forEach(function (x) {
+        if (!common.some(function (y) { return y.text === x.text; })) common.push({ text: x.text, quote: x.quote, from: Core.displayName(Core.CUSTOMERS[cid]) });
+      });
+    });
+    var cm = el("section", "commonbox");
+    var ch = el("div", "chead");
+    ch.appendChild(el("span", "role", "前任者"));
+    ch.appendChild(el("h2", "", "お客さまに関わらず、大切にしていたこと"));
+    cm.appendChild(ch);
+    cm.appendChild(el("div", "csub", "どのお客さまにも通じる、前任者の考え方と習慣です。下の「お客さまごと」は、その人にだけ合わせる対応です。"));
+    if (common.length) {
+      var cl = el("ul", "clist");
+      common.forEach(function (x) {
+        var li = el("li"); li.appendChild(el("b", "", x.text));
+        if (x.quote) li.appendChild(el("span", "quote", "先輩の言葉「" + x.quote + "」"));
+        li.appendChild(el("span", "cfrom", x.from + "の話から"));
+        cl.appendChild(li);
+      });
+      cm.appendChild(cl);
+    } else {
+      cm.appendChild(el("div", "cempty", "まだ見つかっていません。お客さまの話を聞くうちに、「いつも」「どこでも」していることが出てきます。"));
+    }
+    box.appendChild(cm);
+    box.appendChild(el("h2", "pertitle", "お客さまごとに、合わせること"));
+
     // 会社ごとにまとめる（同じ会社の中で、人ごとの接し方を並べる）。いま聞いている人の会社を先に
     var curCo = currentId && Core.CUSTOMERS[currentId] ? Core.CUSTOMERS[currentId].co : null;
     var coOrder = Object.keys(Core.COMPANIES); if (curCo) { coOrder.splice(coOrder.indexOf(curCo), 1); coOrder.unshift(curCo); }
@@ -1735,7 +1780,7 @@ var TsugiteCore = (function () {
         box.appendChild(sec);
         lastCo = c.co;
       }
-      var items = s.board.answered.slice();
+      var items = s.board.answered.filter(function (x) { return x.scope !== "common"; });
       var used = [];
       function pick(re, prefer) {
         var pool = items.filter(function (x) { return used.indexOf(x) < 0 && re.test(x.text + (x.quote || "")); });
