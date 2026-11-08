@@ -409,6 +409,19 @@
   .pertitle { font-size: 22px; margin: 4px 0 8px; }
   .mk.common { background: var(--navy); color: #fff; }
   .story q.nw { white-space: nowrap; }
+  .wfeed { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+  .witem { text-align: left; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 14px 10px; }
+  .witem:hover { border-color: var(--navy); }
+  .witem[aria-pressed="true"] { border-color: var(--navy); box-shadow: 0 0 0 3px var(--navy-soft); }
+  .whead { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; }
+  .wdate { font-size: 13px; color: var(--sub); white-space: nowrap; }
+  .wwho { font-family: var(--mincho); font-weight: 700; font-size: 18px; color: var(--navy); white-space: nowrap; }
+  .wcard { font-size: 12px; color: var(--sub); border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; white-space: nowrap; }
+  .wcard.ok { color: var(--green); border-color: var(--green); font-weight: 700; }
+  .wtext { font-size: 16px; line-height: 1.6; margin-top: 2px; }
+  .wtry { margin: 6px 0 12px; }
+  .wtry summary { cursor: pointer; font-size: 15px; color: var(--sub); }
+  .wtry .nippo { margin-top: 8px; min-height: 110px; }
 </style>
 </head>
 <body>
@@ -426,7 +439,7 @@
   <nav class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="kikidasu">① 聞き出す<small class="tsub">話す人：ベテラン（前任者）</small></button>
     <button role="tab" aria-selected="false" data-tab="tameru">② 貯める<small class="tsub">読む人：若手（後任者）</small></button>
-    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">書く人：若手（後任者）</small></button>
+    <button role="tab" aria-selected="false" data-tab="watasu">③ 渡す<small class="tsub">振り返る人：若手（後任者）</small></button>
   </nav>
 </header>
 
@@ -524,25 +537,25 @@
   <section id="tab-watasu" role="tabpanel" class="hidden">
     <div class="layout">
       <div>
-        <div class="roleline"><span class="role young">書く人：若手（後任者）</span>訪問して日報を書くと、先輩の言葉で返ってきます。</div>
+        <div class="roleline"><span class="role young">振り返る人：若手（後任者）</span>いつもの日報（SFAなど）に書いた内容が届くと、継ぎ手が先輩の言葉を添えます。</div>
         <div class="panel">
-          <h2>若手の日報に返す</h2>
-          <div class="muted">答えは渡しきりません。締めは「問い」「励まし」「意識する一点」のどれかです。</div>
-          <div class="chips" id="wchips"></div>
-          <label class="field-label" for="nippo">若手の日報</label>
-          <textarea id="nippo" class="nippo" placeholder="今日の訪問で起きたこと、困ったことを書いてください"></textarea>
-          <div class="voice">話して入れる：Mac＝音声入力キー（🎤）／Windows＝Windowsキー＋H／iPhone＝キーボードのマイク</div>
+          <h2>届いた日報</h2>
+          <div class="muted">ここで書き直す必要はありません。日報を1つ選んでください（見本の日報です）。</div>
+          <div id="wfeed" class="wfeed"></div>
+          <details class="wtry"><summary>自分で日報を書いて試す</summary>
+            <textarea id="nippo" class="nippo" placeholder="今日の訪問で起きたこと、困ったことを書いてください"></textarea>
+            <div class="voice">話して入れる：Mac＝音声入力キー（🎤）／Windows＝Windowsキー＋H／iPhone＝キーボードのマイク</div>
+          </details>
           <div class="actions">
-            <button id="wsend" class="send">先輩として返す</button>
-            <button id="wsample" class="ghost" type="button">例の日報を入れる</button>
-            <span id="wstatus" class="status hidden">返事を考え中<span class="dots"></span></span>
+            <button id="wsend" class="send">先輩の言葉を受け取る</button>
+            <span id="wstatus" class="status hidden">先輩の言葉を探しています<span class="dots"></span></span>
           </div>
           <div id="werror" class="error"><div id="werrorMsg"></div></div>
         </div>
       </div>
       <aside class="panel wreply" id="wreply">
-        <h2>継ぎ手からの返信</h2>
-        <div id="wempty" class="empty-q">日報を入れて「先輩として返す」を押すと、ここに返信が出ます。</div>
+        <h2>先輩の言葉</h2>
+        <div id="wempty" class="empty-q">日報を選んで「先輩の言葉を受け取る」を押すと、引き継ぎカードにある先輩の言葉が、ここに届きます。</div>
         <div id="wbody" class="hidden">
           <div class="rblock"><span class="fuda t-受け止める">受け止める</span><p id="rUke"></p></div>
           <div class="rblock"><span class="fuda t-物語">先輩の物語</span><p id="rStory" class="story"></p></div>
@@ -1228,6 +1241,15 @@ var TsugiteCore = (function () {
     C: "C部長を訪問。雑談から入ろうとしたら、少し困った顔をされた。要件を伝えたが、反応がうすかった。"
   };
 
+  // 届いた日報（見本）。いつもの日報（SFAなど）から届いた想定。すべて架空
+  var NIPPO_FEED = [
+    { cid: "A", date: "11/6（木）", text: SAMPLE_NIPPO.A },
+    { cid: "A2", date: "11/6（木）", text: "工場長に、新ラインの治具の見積もりの件でごあいさつ。仕様の細かい質問に答えられず、持ち帰りになった。社長に先に話すべきだったのか迷っている。" },
+    { cid: "B", date: "11/7（金）", text: SAMPLE_NIPPO.B },
+    { cid: "B2", date: "11/7（金）", text: "専務に初めて一人で会えた。新部品の話に前向きだったが、社長にも同じ話をしたほうがいいのか分からない。" },
+    { cid: "C", date: "11/8（土）", text: SAMPLE_NIPPO.C }
+  ];
+
   var SAMPLE_REPLY = {
     uketome: "月曜の朝9時に伺い、会えなくても資料を受付に預けて帰ってこられたのですね。",
     story: "{name}も、A社長のところでは曜日を選んでいたそうです。「月曜は朝礼で忙しいから避けてる」「金曜の午前は必ず会社にいるんだよ」と話していました。そして「社長が大事にしてるのは社員さんなんだよ」「受付の人の名前は全部覚えてる」とも。",
@@ -1267,7 +1289,7 @@ var TsugiteCore = (function () {
 
   return {
     buildJuniorPrompt: buildJuniorPrompt, normalizeJunior: normalizeJunior, SAMPLE_JUNIOR: SAMPLE_JUNIOR, JUNIOR_INSTRUCTION: JUNIOR_INSTRUCTION,
-    COMPANIES: COMPANIES, displayName: displayName,
+    COMPANIES: COMPANIES, displayName: displayName, NIPPO_FEED: NIPPO_FEED,
     LAYER_ORDER: LAYER_ORDER, SAMPLE_NIPPO: SAMPLE_NIPPO, SAMPLE_REPLY: SAMPLE_REPLY, REPLY_INSTRUCTION: REPLY_INSTRUCTION,
     buildReplyPrompt: buildReplyPrompt, setCustom: setCustom, buildFirstPrompt: buildFirstPrompt, startCustom: startCustom, normalizeReply: normalizeReply, handoffText: handoffText, recordText: recordText,
     INSTRUCTION: INSTRUCTION, CUSTOMERS: CUSTOMERS, SAMPLE: SAMPLE, FINAL_QUESTION: FINAL_QUESTION,
@@ -1887,9 +1909,14 @@ var TsugiteCore = (function () {
       if (s.juniorQs && s.juniorQs.length) jr.appendChild(el("div", "jnote", "この質問は「次に先輩に聞くこと」にも入りました。①で、若手が先輩に読み上げて聞けます。"));
       card.appendChild(jr);
 
-      var go = el("button", "send go", "このカードで、日報に返す →"); go.type = "button";
+      var go = el("button", "send go", "この人の日報に、先輩の言葉を添える →"); go.type = "button";
       go.style.marginTop = "16px";
-      go.onclick = function () { wcid = cid; showTab("watasu"); };
+      go.onclick = function () {
+        wcid = cid; wpick = -1;
+        Core.NIPPO_FEED.forEach(function (n, k) { if (wpick < 0 && n.cid === cid) wpick = k; });
+        $("nippo").value = wpick >= 0 ? Core.NIPPO_FEED[wpick].text : "";
+        showTab("watasu");
+      };
       card.appendChild(go);
       box.appendChild(card);
     });
@@ -1925,14 +1952,20 @@ var TsugiteCore = (function () {
 
   // ---------- ③ 渡す ----------
   var wcid = "A", wwaiting = false, recentClosings = [];
+  var wpick = -1;
   function renderWatasu() {
-    var box = $("wchips"); box.innerHTML = "";
-    Object.keys(Core.CUSTOMERS).forEach(function (cid) {
-      var c = Core.CUSTOMERS[cid], s = sessions[cid];
-      var b = el("button", "chip", Core.displayName(c)); b.type = "button";
-      b.setAttribute("aria-pressed", String(cid === wcid));
-      b.appendChild(el("small", "", s && s.board.answered.length ? ("カードあり・本人の言葉" + s.board.answered.length + "件") : "カードまだ"));
-      b.onclick = function () { wcid = cid; renderWatasu(); };
+    var box = $("wfeed"); box.innerHTML = "";
+    Core.NIPPO_FEED.forEach(function (n, k) {
+      var c = Core.CUSTOMERS[n.cid], s = sessions[n.cid];
+      var b = el("button", "witem"); b.type = "button";
+      b.setAttribute("aria-pressed", String(k === wpick));
+      var h = el("div", "whead");
+      h.appendChild(el("span", "wdate", n.date));
+      h.appendChild(el("span", "wwho", Core.displayName(c)));
+      h.appendChild(el("span", "wcard" + (s && s.board.answered.length ? " ok" : ""), s && s.board.answered.length ? "引き継ぎカードあり" : "カードまだ"));
+      b.appendChild(h);
+      b.appendChild(el("div", "wtext", n.text));
+      b.onclick = function () { wpick = k; wcid = n.cid; $("nippo").value = n.text; renderWatasu(); };
       box.appendChild(b);
     });
     wrapJa(box);
@@ -1986,10 +2019,7 @@ var TsugiteCore = (function () {
     }).then(function () { wwaiting = false; $("wsend").disabled = false; $("wstatus").classList.add("hidden"); });
   }
   $("wsend").onclick = wsubmit;
-  $("wsample").onclick = function () {
-    var c = Core.CUSTOMERS[wcid];
-    $("nippo").value = Core.SAMPLE_NIPPO[wcid] || (c ? c.name + "を訪問。話は聞いてもらえたが、次の約束までは取れなかった。どう切り出せばよかったのか分からない。" : "");
-  };
+  $("nippo").addEventListener("input", function () { if (wpick >= 0 && $("nippo").value !== Core.NIPPO_FEED[wpick].text) { wpick = -1; renderWatasu(); } });
   $("nippo").addEventListener("keydown", function (e) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); wsubmit(); }
   });
