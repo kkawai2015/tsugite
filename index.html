@@ -376,6 +376,24 @@
   .evalgrid p { white-space: normal; }
   .evalgrid p b { display: inline-block; }
   .sec.notyet li, .tagrow span { white-space: normal; }
+  .cards { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, .6fr) !important; align-items: start; }
+  .cards.has-x { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, .6fr) !important; }
+  @media (max-width: 1100px) { .cards, .cards.has-x { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+  @media (max-width: 620px) { .cards, .cards.has-x { grid-template-columns: 1fr !important; } }
+  .coblock { background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: 10px 12px 12px; }
+  .cohead { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+  .coname { font-family: var(--mincho); font-weight: 700; font-size: 22px; color: var(--navy); white-space: nowrap; }
+  .rank { font-size: 13px; font-weight: 800; color: #fff; background: var(--navy); border-radius: 6px; padding: 0 8px; white-space: nowrap; }
+  .cokind { font-size: 13px; color: var(--sub); }
+  .corecent { font-size: 13px; color: var(--ink); margin: 4px 0 8px; line-height: 1.55; }
+  .people { display: flex; flex-direction: column; gap: 6px; }
+  .card.person { padding: 6px 10px 7px; }
+  .card.person .who { font-size: 18px; }
+  .setup-head .muted { font-size: 13px; }
+  .vcard .cogroup { font-size: 14px; color: var(--sub); }
+  .cosec { margin: 6px 0 12px; display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; }
+  .cosec h2 { margin: 0; font-size: 26px; }
+  .cosec .corecent { margin: 0; font-size: 15px; }
 </style>
 </head>
 <body>
@@ -406,7 +424,7 @@
     <div class="panel setup" id="setup">
       <div class="picked-bar"><span class="who" id="pbWho"></span><span class="rec" id="pbRec"></span><button id="pbChange" class="ghost" type="button">お客さまを切り替える</button></div>
       <div class="setup-head">
-        <h2>お客さまを1人選ぶ</h2>
+        <h2>お客さまを選ぶ</h2><span class="muted">会社ごとに、名刺交換している人が並んでいます。顧客ランク・取引はすべて架空です（ランク：A〜C＝取引の大きさ、1〜3＝これからの伸びしろ）</span>
       </div>
       <div class="cards" id="cards"></div>
       <div id="customForm" class="custom-form hidden">
@@ -612,33 +630,56 @@ var TsugiteCore = (function () {
 
   // お客さまカード：SFAや顧客台帳に残っている「記録」だけ（すべて架空）。
   // 会える曜日・関係のきっかけ・雑談の好みなどは記録に無い。ベテランが答えて初めて出てくる。
-  var CUSTOMERS = {
-    A: {
-      id: "A", name: "A社長", company: "A社（架空）",
-      records: ["取引18年", "主な納品物：精密シャフト・治具", "訪問：月2回（18年間ほぼ途切れず）", "先方窓口：A社長（社長が直接）", "当社担当：ベテラン営業（前任者）"],
-      first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
-               reason: "記録の「月2回を18年」から、会い方に決まりがあると読んで確かめます",
-               question: "A社長とは、訪問の曜日や時間帯がだいたい決まっている印象です。合っていますか？" },
-      firstGuess: { text: "訪問の曜日・時間帯がだいたい決まっているかもしれない", basis: "記録：月2回の訪問が18年ほぼ途切れず" }
-    },
-    B: {
-      id: "B", name: "B社長", company: "B社（架空）",
-      records: ["取引9年", "主な納品物：樹脂成形部品", "訪問：月1回（1回の訪問記録が長め・平均90分）", "先方窓口：B社長", "当社担当：ベテラン営業（前任者）"],
-      first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
-               reason: "記録の「訪問が平均90分」から、雑談の時間が長いと読んで確かめます",
-               question: "B社長とは訪問が長めなので、本題の前に雑談の時間をとっている印象です。合っていますか？" },
-      firstGuess: { text: "本題の前に雑談の時間をとっているかもしれない", basis: "記録：1回の訪問が平均90分" }
-    },
-    C: {
-      id: "C", name: "C部長", company: "C社（架空）",
-      records: ["取引4年", "主な納品物：検査用ゲージ", "訪問：四半期に1回（やりとりの8割はメール）", "先方窓口：C部長（購買部）", "当社担当：ベテラン営業（前任者）"],
-      first: { type: "確かめる", acknowledgement: "", layer: "葉", options: YESNO.slice(),
-               reason: "記録の「やりとりの8割がメール」から、書面を好むと読んで確かめます",
-               question: "C部長とは、訪問より先にメールで要点を送るほうが話が進む印象です。合っていますか？" },
-      firstGuess: { text: "訪問より先にメールで要点を送るほうが話が進むかもしれない", basis: "記録：やりとりの8割がメール" }
-    }
+  // 会社（顧客台帳）。ランク・直近の取引はすべて架空。ランク：A〜C＝取引の大きさ、1〜3＝これからの伸びしろ
+  var COMPANIES = {
+    A: { id: "A", name: "A社", kind: "産業機械メーカー", rank: "A-1", since: "取引18年",
+         recent: "10月：精密シャフト1,200本を定期納品／9月：新ライン用の治具を見積もり中" },
+    B: { id: "B", name: "B社", kind: "樹脂成形メーカー", rank: "B-2", since: "取引9年",
+         recent: "8月：新部品の見積もりを2回提出（受注に至らず）／月次の定期納品は継続" },
+    C: { id: "C", name: "C社", kind: "検査機器メーカー", rank: "C-1", since: "取引4年",
+         recent: "6月：検査用ゲージを単発で受注／来期の予算は未確認" }
   };
-  function recordText(c) { return c.name + "（" + c.company + "）：" + c.records.join("／"); }
+  function P(id, co, name, title, records, q, guess, layer) {
+    return {
+      id: id, co: co, name: name, title: title, company: COMPANIES[co].name + "（架空）", records: records,
+      first: { type: "確かめる", acknowledgement: "", layer: layer || "葉", options: YESNO.slice(), reason: guess.reason, question: q },
+      firstGuess: { text: guess.text, basis: guess.basis }
+    };
+  }
+  // お客さま（名刺交換している人）。記録に残る情報だけを載せる。会える曜日や好みは、ベテランに聞いて初めて出てくる
+  var CUSTOMERS = {
+    A: P("A", "A", "A社長", "社長", ["名刺交換：18年前", "訪問：月2回（18年間ほぼ途切れず）", "窓口：社長が直接"],
+         "A社長とは、訪問の曜日や時間帯がだいたい決まっている印象です。合っていますか？",
+         { text: "訪問の曜日・時間帯がだいたい決まっているかもしれない", basis: "記録：月2回の訪問が18年ほぼ途切れず", reason: "記録の「月2回を18年」から、会い方に決まりがあると読んで確かめます" }),
+    A2: P("A2", "A", "工場長", "工場長", ["名刺交換：6年前", "治具の仕様の相談相手", "面談記録：年3回（訪問時の立ち話）"],
+         "A社では、治具の話は社長より先に工場長に相談すると進む印象です。合っていますか？",
+         { text: "治具の話は、社長より先に工場長に相談すると進むかもしれない", basis: "記録：治具の仕様の相談相手", reason: "記録の「治具の相談相手」から、話を通す順番を読んで確かめます" }, "役割"),
+    A3: P("A3", "A", "購買課長", "購買課長", ["名刺交換：2年前（前の課長から交代）", "見積もり・発注の窓口", "やりとり：ほぼメール"],
+         "購買課長には、訪問より先に、見積もりの数字をメールで送るほうが喜ばれる印象です。合っていますか？",
+         { text: "見積もりは、訪問より先にメールで数字を送ると喜ばれるかもしれない", basis: "記録：やりとりはほぼメール", reason: "記録の「ほぼメール」から、連絡の順番を読んで確かめます" }),
+    B: P("B", "B", "B社長", "社長", ["名刺交換：9年前", "訪問：月1回（1回が平均90分と長め）", "窓口：社長"],
+         "B社長とは訪問が長めなので、本題の前に雑談の時間をとっている印象です。合っていますか？",
+         { text: "本題の前に雑談の時間をとっているかもしれない", basis: "記録：1回の訪問が平均90分", reason: "記録の「訪問が平均90分」から、雑談の時間が長いと読んで確かめます" }),
+    B2: P("B2", "B", "専務", "専務（後継者）", ["名刺交換：3年前", "役職：専務（後継者）", "面談記録：年2回"],
+         "これからの提案は、B社長だけでなく専務にも同じ日に伝えるほうがよい印象です。合っていますか？",
+         { text: "これからの提案は、社長と専務に同じ日に伝えるほうがよいかもしれない", basis: "記録：役職は専務（後継者）", reason: "記録の「後継者」から、話を伝える相手を読んで確かめます" }, "役割"),
+    C: P("C", "C", "C部長", "購買部長", ["名刺交換：4年前", "訪問：四半期に1回（やりとりの8割はメール）", "窓口：購買部"],
+         "C部長とは、訪問より先にメールで要点を送るほうが話が進む印象です。合っていますか？",
+         { text: "訪問より先にメールで要点を送るほうが話が進むかもしれない", basis: "記録：やりとりの8割がメール", reason: "記録の「やりとりの8割がメール」から、書面を好むと読んで確かめます" }),
+    C2: P("C2", "C", "工場長", "工場長", ["名刺交換：1年前（展示会）", "面談記録：1回のみ"],
+         "C社の現場の困りごとは、C部長より工場長のほうが詳しい印象です。合っていますか？",
+         { text: "現場の困りごとは、部長より工場長のほうが詳しいかもしれない", basis: "記録：展示会で名刺交換、面談1回", reason: "記録の「展示会での名刺交換」から、現場とのつながりを読んで確かめます" }, "役割")
+  };
+  function displayName(c) { return c.co && c.name.indexOf(COMPANIES[c.co].name) < 0 ? c.name + "（" + COMPANIES[c.co].name + "）" : c.name; }
+  function recordText(c) {
+    if (!c.co) return c.name + "（" + c.company + "）：" + c.records.join("／");
+    var co = COMPANIES[c.co];
+    var others = Object.keys(CUSTOMERS).filter(function (k) { return CUSTOMERS[k].co === c.co && k !== c.id; })
+      .map(function (k) { return CUSTOMERS[k].name + "（" + CUSTOMERS[k].records.slice(1).join("・") + "）"; });
+    return displayName(c) + "：" + c.title + "／" + c.records.join("／") +
+      "\n会社：" + co.name + "（架空・" + co.kind + "）／顧客ランク " + co.rank + "／" + co.since + "／直近の取引：" + co.recent +
+      (others.length ? "\n同じ会社で名刺交換している人：" + others.join("、") : "");
+  }
 
   var START_NOTYET = [
     "会える曜日・時間帯",
@@ -1209,6 +1250,7 @@ var TsugiteCore = (function () {
 
   return {
     buildJuniorPrompt: buildJuniorPrompt, normalizeJunior: normalizeJunior, SAMPLE_JUNIOR: SAMPLE_JUNIOR, JUNIOR_INSTRUCTION: JUNIOR_INSTRUCTION,
+    COMPANIES: COMPANIES, displayName: displayName,
     LAYER_ORDER: LAYER_ORDER, SAMPLE_NIPPO: SAMPLE_NIPPO, SAMPLE_REPLY: SAMPLE_REPLY, REPLY_INSTRUCTION: REPLY_INSTRUCTION,
     buildReplyPrompt: buildReplyPrompt, setCustom: setCustom, buildFirstPrompt: buildFirstPrompt, startCustom: startCustom, normalizeReply: normalizeReply, handoffText: handoffText, recordText: recordText,
     INSTRUCTION: INSTRUCTION, CUSTOMERS: CUSTOMERS, SAMPLE: SAMPLE, FINAL_QUESTION: FINAL_QUESTION,
@@ -1305,24 +1347,39 @@ var TsugiteCore = (function () {
   }
 
   // ---------- カード ----------
+  function personButton(cid) {
+    var c = Core.CUSTOMERS[cid];
+    var b = el("button", "card person"); b.type = "button";
+    b.setAttribute("aria-pressed", String(cid === currentId));
+    var who = el("div"); who.appendChild(el("span", "who", c.name)); if (c.title && c.title !== c.name) who.appendChild(el("span", "co", c.title));
+    b.appendChild(who);
+    var ul = el("ul", "memo");
+    c.records.forEach(function (r) { ul.appendChild(el("li", "", r)); });
+    b.appendChild(ul);
+    var s = sessions[cid];
+    b.appendChild(el("div", "progress", s ? (s.done ? "聞き取り完了" : (s.turns.length + "往復 済み")) : ""));
+    b.onclick = function () { choose(cid); };
+    return b;
+  }
   function renderCards() {
     var box = $("cards"); box.innerHTML = "";
     box.classList.toggle("picked", !!currentId);
-    Object.keys(Core.CUSTOMERS).forEach(function (cid) {
-      var c = Core.CUSTOMERS[cid];
-      var b = el("button", "card"); b.type = "button";
-      b.setAttribute("aria-pressed", String(cid === currentId));
-      var who = el("div"); who.appendChild(el("span", "who", c.name)); who.appendChild(el("span", "co", c.company));
-      b.appendChild(who);
-      b.appendChild(el("span", "memo-label", "記録に残っていること（SFA・顧客台帳）"));
-      var ul = el("ul", "memo");
-      c.records.forEach(function (r) { ul.appendChild(el("li", "", r)); });
-      b.appendChild(ul);
-      var s = sessions[cid];
-      b.appendChild(el("div", "progress", s ? (s.done ? "聞き取り完了" : (s.turns.length + "往復 済み")) : ""));
-      b.onclick = function () { choose(cid); };
-      box.appendChild(b);
+    // 会社ごと：顧客ランク・直近の取引、その中に名刺交換している人
+    Object.keys(Core.COMPANIES).forEach(function (coId) {
+      var co = Core.COMPANIES[coId];
+      var blk = el("div", "coblock");
+      var h = el("div", "cohead");
+      h.appendChild(el("span", "coname", co.name));
+      h.appendChild(el("span", "rank", "ランク " + co.rank));
+      h.appendChild(el("span", "cokind", co.kind + "・" + co.since));
+      blk.appendChild(h);
+      blk.appendChild(el("div", "corecent", "直近：" + co.recent));
+      var ppl = el("div", "people");
+      Object.keys(Core.CUSTOMERS).filter(function (k) { return Core.CUSTOMERS[k].co === coId; }).forEach(function (cid) { ppl.appendChild(personButton(cid)); });
+      blk.appendChild(ppl);
+      box.appendChild(blk);
     });
+    if (Core.CUSTOMERS.X) { var bx = el("div", "coblock"); bx.appendChild(el("div", "cohead")).appendChild(el("span", "coname", "自分のお客さま")); var px = el("div", "people"); px.appendChild(personButton("X")); bx.appendChild(px); box.appendChild(bx); }
     box.classList.toggle("has-x", !!Core.CUSTOMERS.X);
     var add = el("button", "card add"); add.type = "button";
     add.appendChild(el("span", "plus", Core.CUSTOMERS.X ? "＋ 別のお客さまで試す" : "＋ 自分のお客さまで試す"));
@@ -1333,8 +1390,9 @@ var TsugiteCore = (function () {
     var cur = currentId && Core.CUSTOMERS[currentId];
     $("setup").classList.toggle("collapsed", !!cur && !expandCards);
     if (cur) {
-      $("pbWho").textContent = cur.name;
-      $("pbRec").textContent = "記録：" + cur.records.slice(0, 3).join("・");
+      var co2 = cur.co && Core.COMPANIES[cur.co];
+      $("pbWho").textContent = co2 ? co2.name + "　" + cur.name : cur.name;
+      $("pbRec").textContent = co2 ? ("ランク " + co2.rank + "・" + co2.since + "・直近：" + co2.recent.split("／")[0]) : ("記録：" + cur.records.slice(0, 3).join("・"));
       wrapJa($("setup").querySelector(".picked-bar"));
     }
   }
@@ -1657,9 +1715,26 @@ var TsugiteCore = (function () {
       box.appendChild(el("div", "panel empty-q", "まだ引き継ぎカードはありません。①「聞き出す」でベテランに答えてもらうと、ここに並びます。"));
       wrapJa(box); return;
     }
-    if (currentId && ids.indexOf(currentId) > 0) { ids.splice(ids.indexOf(currentId), 1); ids.unshift(currentId); }
+    // 会社ごとにまとめる（同じ会社の中で、人ごとの接し方を並べる）。いま聞いている人の会社を先に
+    var curCo = currentId && Core.CUSTOMERS[currentId] ? Core.CUSTOMERS[currentId].co : null;
+    var coOrder = Object.keys(Core.COMPANIES); if (curCo) { coOrder.splice(coOrder.indexOf(curCo), 1); coOrder.unshift(curCo); }
+    ids.sort(function (x, y) {
+      var cx = Core.CUSTOMERS[x].co, cy = Core.CUSTOMERS[y].co;
+      var ix = cx ? coOrder.indexOf(cx) : 99, iy = cy ? coOrder.indexOf(cy) : 99;
+      return ix - iy || (x === currentId ? -1 : y === currentId ? 1 : 0);
+    });
+    var lastCo = "";
     ids.forEach(function (cid) {
       var c = Core.CUSTOMERS[cid], s = sessions[cid];
+      if (c.co && c.co !== lastCo) {
+        var co = Core.COMPANIES[c.co];
+        var sec = el("div", "cosec");
+        sec.appendChild(el("h2", "", co.name));
+        sec.appendChild(el("span", "rank", "ランク " + co.rank));
+        sec.appendChild(el("span", "corecent", co.kind + "・" + co.since + "・直近：" + co.recent));
+        box.appendChild(sec);
+        lastCo = c.co;
+      }
       var items = s.board.answered.slice();
       var used = [];
       function pick(re, prefer) {
@@ -1675,7 +1750,7 @@ var TsugiteCore = (function () {
       var card = el("article", "vcard");
       var head = el("div", "vhead");
       head.appendChild(el("h3", "", c.name));
-      head.appendChild(el("span", "rec", "記録：" + c.records.slice(0, 3).join("・")));
+      head.appendChild(el("span", "rec", (c.title && c.title !== c.name ? c.title + "・" : "") + c.records.slice(0, 3).join("・")));
       head.appendChild(el("span", "st", s.done ? "聞き取り完了" : (s.turns.length + "往復 聞き取り済み")));
       card.appendChild(head);
 
@@ -1795,7 +1870,7 @@ var TsugiteCore = (function () {
     var box = $("wchips"); box.innerHTML = "";
     Object.keys(Core.CUSTOMERS).forEach(function (cid) {
       var c = Core.CUSTOMERS[cid], s = sessions[cid];
-      var b = el("button", "chip", c.name); b.type = "button";
+      var b = el("button", "chip", Core.displayName(c)); b.type = "button";
       b.setAttribute("aria-pressed", String(cid === wcid));
       b.appendChild(el("small", "", s && s.board.answered.length ? ("カードあり・本人の言葉" + s.board.answered.length + "件") : "カードまだ"));
       b.onclick = function () { wcid = cid; renderWatasu(); };
@@ -1820,7 +1895,7 @@ var TsugiteCore = (function () {
     if (r.used_quotes.length) {
       var c = Core.CUSTOMERS[wcid];
       u.appendChild(el("b", "", "先輩の言葉が" + r.used_quotes.length + "つ届きました"));
-      u.appendChild(document.createTextNode("　（" + (c ? c.name : "") + "の引き継ぎカードから。下線の言葉です）"));
+      u.appendChild(document.createTextNode("　（" + (c ? Core.displayName(c) : "") + "の引き継ぎカードから。下線の言葉です）"));
     }
     wrapJa($("wreply"));
   }
